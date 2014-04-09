@@ -1,0 +1,137 @@
+SampleID,StationCode,FinalID,BAResult,LifeStageCode
+Sample1,Station1,Ameletus,3,L
+Sample1,Station1,Ampumixis dispar,5,L
+Sample1,Station1,Anagapetus,1,L
+Sample1,Station1,Arctopsyche,1,L
+Sample1,Station1,Arctopsyche californica,14,L
+Sample1,Station1,Arctopsyche grandis,1,L
+Sample1,Station1,Baetis,35,L
+Sample1,Station1,Baetis tricaudatus,74,L
+Sample1,Station1,Brillia,11,L
+Sample1,Station1,Calineuria californica,16,L
+Sample1,Station1,Chironomini,1,L
+Sample1,Station1,Cinygma,1,L
+Sample1,Station1,Cinygmula,13,L
+Sample1,Station1,Cricotopus nostocicola,21,L
+Sample1,Station1,Diphetor hageni,2,L
+Sample1,Station1,Doroneuria baumanni,13,L
+Sample1,Station1,Drunella doddsii,9,L
+Sample1,Station1,Eubrianax edwardsii,14,L
+Sample1,Station1,Eukiefferiella,14,L
+Sample1,Station1,Glossosoma,3,L
+Sample1,Station1,Heptageniidae,5,L
+Sample1,Station1,Heterlimnius,4,L
+Sample1,Station1,Heterlimnius,5,A
+Sample1,Station1,Heteroplectron californicum,3,L
+Sample1,Station1,Hydropsyche,42,L
+Sample1,Station1,Hydropsychidae,6,L
+Sample1,Station1,Ironodes,2,L
+Sample1,Station1,Juga,2,X
+Sample1,Station1,Lepidostoma,7,L
+Sample1,Station1,Malenka,40,L
+Sample1,Station1,Micrasema,31,L
+Sample1,Station1,Micropsectra,7,L
+Sample1,Station1,Microtendipes rydalensis group,1,L
+Sample1,Station1,Nemouridae,9,L
+Sample1,Station1,Neophylax,4,L
+Sample1,Station1,Optioservus,4,A
+Sample1,Station1,Ordobrevia nubifera,2,L
+Sample1,Station1,Ordobrevia nubifera,7,A
+Sample1,Station1,Orthocladiinae,1,L
+Sample1,Station1,Orthocladiinae,1,P
+Sample1,Station1,Orthocladius complex,4,L
+Sample1,Station1,Paraleptophlebia,1,L
+Sample1,Station1,Parametriocnemus,4,L
+Sample1,Station1,Parametriocnemus,1,P
+Sample1,Station1,Parapsyche,3,L
+Sample1,Station1,Polycelis,4,X
+Sample1,Station1,Rheotanytarsus,1,P
+Sample1,Station1,Rheotanytarsus,15,L
+Sample1,Station1,Rhithrogena,4,L
+Sample1,Station1,Rhizelmis nigra,39,L
+Sample1,Station1,Rhyacophila,8,L
+Sample1,Station1,Rhyacophila betteni group,5,L
+Sample1,Station1,Rhyacophila brunnea group,1,L
+Sample1,Station1,Rhyacophila hyalinata group,1,L
+Sample1,Station1,Simulium,3,L
+Sample1,Station1,Soliperla,1,L
+Sample1,Station1,Sperchonopsis,1,X
+Sample1,Station1,Sweltsa,6,L
+Sample1,Station1,Tanytarsini,1,P
+Sample1,Station1,Tanytarsini,2,L
+Sample1,Station1,Torrenticola,4,X
+Sample1,Station1,Tvetenia bavarica group,4,L
+Sample1,Station1,Yoraperla siletz,27,L
+Sample1,Station1,Zaitzevia,1,A
+Sample2,Station2,Acneus,1,L
+Sample2,Station2,Ampumixis dispar,1,L
+Sample2,Station2,Antocha,3,L
+Sample2,Station2,Baetidae,40,L
+Sample2,Station2,Baetis tricaudatus,28,L
+Sample2,Station2,Bezzia/ Palpomyia,4,L
+Sample2,Station2,Brillia,2,L
+Sample2,Station2,Brundiniella,4,L
+Sample2,Station2,Calineuria californica,25,L
+Sample2,Station2,Chloroperlidae,2,L
+Sample2,Station2,Cinygma,54,L
+Sample2,Station2,Cinygmula,1,L
+Sample2,Station2,Despaxia augusta,13,L
+Sample2,Station2,Dicranota,1,L
+Sample2,Station2,Diphetor hageni,7,L
+Sample2,Station2,Dixa,5,L
+Sample2,Station2,Dolophilodes,1,L
+Sample2,Station2,Doroneuria baumanni,11,L
+Sample2,Station2,Elmidae,1,L
+Sample2,Station2,Ephemerellidae,6,L
+Sample2,Station2,Eubrianax edwardsii,5,L
+Sample2,Station2,Eukiefferiella,3,L
+Sample2,Station2,Glossosoma,32,L
+Sample2,Station2,Gumaga,8,L
+Sample2,Station2,Heptageniidae,4,L
+Sample2,Station2,Heterlimnius,8,A
+Sample2,Station2,Heterlimnius,13,L
+Sample2,Station2,Heteroplectron californicum,11,L
+Sample2,Station2,Heterotrissocladius marcidus group.,2,L
+Sample2,Station2,Hydropsyche,19,L
+Sample2,Station2,Ironodes,1,L
+Sample2,Station2,Lebertia,1,X
+Sample2,Station2,Lepidostoma,15,L
+Sample2,Station2,Leuctridae,4,L
+Sample2,Station2,Limnephilidae,43,L
+Sample2,Station2,Malenka,10,L
+Sample2,Station2,Micrasema,7,L
+Sample2,Station2,Micropsectra,43,L
+Sample2,Station2,Microtendipes rydalensis group,1,L
+Sample2,Station2,Mideopsis,3,X
+Sample2,Station2,Nemouridae,7,L
+Sample2,Station2,Neophylax,2,L
+Sample2,Station2,Octogomphus specularis,1,L
+Sample2,Station2,Oligochaeta,2,X
+Sample2,Station2,Optioservus,6,A
+Sample2,Station2,Optioservus,20,L
+Sample2,Station2,Orthocladiinae,4,L
+Sample2,Station2,Orthocladius complex,1,L
+Sample2,Station2,Parakiefferiella,1,P
+Sample2,Station2,Paraleptophlebia,24,L
+Sample2,Station2,Parametriocnemus,7,L
+Sample2,Station2,Polycentropus,1,L
+Sample2,Station2,Polypedilum,1,L
+Sample2,Station2,Probezzia,1,L
+Sample2,Station2,Psychoda,1,L
+Sample2,Station2,Rheotanytarsus,2,L
+Sample2,Station2,Rhyacophila,2,L
+Sample2,Station2,Rhyacophila arnaudi,1,L
+Sample2,Station2,Rhyacophila betteni group,5,L
+Sample2,Station2,Rhyacophila brunnea group,1,L
+Sample2,Station2,Rhyacophila sibirica group,4,L
+Sample2,Station2,Sialis,3,L
+Sample2,Station2,Simulium,5,L
+Sample2,Station2,Sperchonopsis,3,X
+Sample2,Station2,Sweltsa,6,L
+Sample2,Station2,Thienemanniella,1,L
+Sample2,Station2,Thienemannimyia group,1,L
+Sample2,Station2,Torrenticola,26,X
+Sample2,Station2,Tvetenia bavarica group,6,L
+Sample2,Station2,Zaitzevia,1,A
+Sample2,Station2,Zaitzevia,5,L
+Sample2,Station2,Zavrelimyia/ Paramerina,7,L

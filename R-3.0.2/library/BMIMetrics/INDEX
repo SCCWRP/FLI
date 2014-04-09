@@ -1,0 +1,9 @@
+BMI                     BMI
+BMIMetrics              Suite of metric calculators for benthic
+                        macroinvertebrate data
+BMIall                  Compute all BMI metrics Computes all available
+                        BMI metrics.
+aggregate.BMI           Aggregate FinalID
+bugdata                 Example benthic macroinvertebrate data frame
+loadMetaData            loadMetaData
+sample                  Sample Bug Results
