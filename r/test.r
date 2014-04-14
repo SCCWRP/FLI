@@ -1,13 +1,12 @@
 source("r/use.r")
-library(RODBC)
 options(stringsAsFactors=FALSE)
 
 
 
 
-b1 <- read.csv("C:/Users/marke/Desktop/bugs_sub.csv")
-s1 <- read.csv("C:/Users/marke/Desktop/stations_sub.csv")
-test2 <- fli(b1, s1, 100)
+b1 <- read.csv("L:/CSCI_ME/bugs_sub.csv")
+s1 <- read.csv("L:/CSCI_ME/stations_sub.csv")
+test2 <- fli(b1, s1, 500)
 
 
 

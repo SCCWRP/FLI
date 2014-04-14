@@ -10,9 +10,9 @@ library(reshape2)
 
 source("r/oe_model_fun.r")
 source("r/fli_data.r")
-load("oemodelsv2_20140328.rdata")
-load("BMImets.rdata")
-load("mmimodelsV2_20140227.rdata")
+load("move/oemodelsv2_20140328.rdata")
+load("move/BMImets.rdata")
+load("move/mmimodelsV2_20140227.rdata")
 load("../fullCSCI_results.rdata")
 
 phab <- read.csv("../extra FLI stuff/phab.csv")
@@ -117,6 +117,7 @@ ggplot(combn, aes(CSCI, (FLI-CSCI), colour=as.factor(subsample))) +
   scale_color_discrete("Level of subsampling") +
   theme(text=element_text(size=18))
 
+phabc$FLI <- phabc$FLI - phabc$CSCI
 phab2 <- melt(phabc, id.vars=names(phabc)[!names(phabc) %in% c("CSCI", "FLI")])
 phab2$var <- as.character(phab2$var)
 phab2$var[phab2$var=="FLI"] <- paste0("FLI-", phab2$subsample[phab2$var=="FLI"])
@@ -140,15 +141,17 @@ ggplot(phab2[phab2$SiteSet == "RefCal", ], aes(var, value)) + geom_boxplot() +
   facet_wrap(~PSA6c) + theme_bw() + xlab("") + ylab("") +
   ylim(0, 1.5) + theme(text=element_text(size=18))
 
-ggplot(phab2[phab2$SiteSet %in% c("RefCal", "RefVal"), ], 
+ggplot(phab2[phab2$SiteSet %in% c("RefCal", "RefVal") &
+               phab2$var != "CSCI", ], 
        aes(XSLOPE, value)) +
   geom_point() +
   geom_smooth(method="lm") +
   facet_wrap(~var) +
   theme_bw() +
   theme(text=element_text(size=18)) +
-  ylab("") + ylim(0, 1.5) + xlim(0, 5)
+  ylab("FLI - CSCI") +  xlim(0, 5)
 
+combn$FLI <- combn$FLI - combn$CSCI
 combn2 <- melt(combn, id.vars=names(combn)[!names(combn) %in% c("CSCI", "FLI")])
 combn2$var <- as.character(combn2$var)
 combn2$var[combn2$var=="FLI"] <- paste0("FLI-", combn2$subsample[combn2$var=="FLI"])
@@ -164,11 +167,11 @@ ggplot(sdtable[which(sdtable$sd > 0), ], aes(var, sd)) + geom_boxplot() +
   ylab("within-site standard deviation") + xlab("") +
   theme_bw()
 
-ggplot(combn2, aes(AgUrbanCode21_1k, value)) +
+ggplot(combn2[combn2$var != "CSCI", ], aes(AgUrbanCode21_1k, value)) +
   facet_wrap(~var) +
   geom_point(aes(colour=Condition)) +
   geom_smooth(method="lm", colour="black") +
   theme_bw() +
   scale_color_discrete("") +
   theme(text=element_text(size=18)) +
-  ylab("") + ylim(0, 1.5) 
+  ylab("FLI - CSCI") #+ ylim(0, 1.5) 
