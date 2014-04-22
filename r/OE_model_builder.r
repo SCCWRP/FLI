@@ -2,7 +2,6 @@
 
 library(randomForest)
 library(reshape2)
-library(ggplot2)
 library(plyr)
 library(stringr)
 library(vegan)

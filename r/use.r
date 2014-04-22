@@ -4,9 +4,7 @@ library(plyr)
 library(randomForest)
 library(reshape2)
 source("r/gis.r")
-# source("r/test_data.r")
-# load("data/OEMOD_family1.0.rdata")
-# load("data/MMI_stuff.rdata")
+
 load("L:/CSCI_ME/FamilyIndex/data/metadata.rdata")
 load("move/mmimodelsV2_20140227.rdata")
 load("move/oemodelsv2_20140328.rdata")
@@ -14,8 +12,6 @@ load("move/oemodelsv2_20140328.rdata")
 fli_oe <- function(bugs, pred, size){
   
   ### OE###
-  
-  
   
   bugs$Family_OTU <- as.character(metadata$Family_OTU[match(bugs$FinalID, metadata$FinalID)])
   
@@ -173,7 +169,8 @@ fli <- function(bugs, pred, sampleSize = 300) {
                    "MMI")]
   core$FLI <- apply(core[, c("OoverE", "MMI")], 1, mean)
   list(core = core, metrics = mmi[[2]], scores=mmi[[1]],
-       captureProbs = oe[[2]], groupProbs = oe[[3]])
+       captureProbs = oe[[2]], groupProbs = oe[[3]],
+       stationGIS = pred)
 }
 
 generate_stations <- function(coords) {
@@ -181,10 +178,3 @@ generate_stations <- function(coords) {
   stations <- cbind(coords, stations[, c("ppt", "temp", "elevation")])
   stations
 }
-
-# loc <- stations[, c("StationCode", "New_Lat", "New_Long")]
-# names(loc)[2:3] <- c("Lat", "Long")
-# 
-# gen_stations <- generate_stations(loc)
-# 
-# result <- fli(bugs_sub, gen_stations)
