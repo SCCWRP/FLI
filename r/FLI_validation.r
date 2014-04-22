@@ -111,11 +111,14 @@ summary(lm(data=result[[4]], CSCI ~ FLI))
 
 
 
-ggplot(combn, aes(CSCI, (FLI-CSCI), colour=as.factor(subsample))) +
+ggplot(combn, aes(CSCI*100, (FLI-CSCI)*100, colour=as.factor(subsample))) +
   geom_smooth(method="lm") +
   theme_bw() +
+  scale_x_continuous(breaks=seq(10, 120, by=10)) + 
   scale_color_discrete("Level of subsampling") +
-  theme(text=element_text(size=18))
+  theme(text=element_text(size=18)) +
+  xlab("CSCI") + ylab("(FLI - CSCI)") +
+  coord_cartesian(xlim=c(0, 100))
 
 phabc$FLI <- phabc$FLI - phabc$CSCI
 phab2 <- melt(phabc, id.vars=names(phabc)[!names(phabc) %in% c("CSCI", "FLI")])
@@ -151,10 +154,10 @@ ggplot(phab2[phab2$SiteSet %in% c("RefCal", "RefVal") &
   theme(text=element_text(size=18)) +
   ylab("FLI - CSCI") +  xlim(0, 5)
 
-combn$FLI <- combn$FLI - combn$CSCI
-combn2 <- melt(combn, id.vars=names(combn)[!names(combn) %in% c("CSCI", "FLI")])
+combn$FLI_resid <- combn$FLI - combn$CSCI
+combn2 <- melt(combn, id.vars=names(combn)[!names(combn) %in% c("CSCI_resid", "FLI")])
 combn2$var <- as.character(combn2$var)
-combn2$var[combn2$var=="FLI"] <- paste0("FLI-", combn2$subsample[combn2$var=="FLI"])
+combn2$var[combn2$var=="FLI_resid"] <- paste0("FLI-", combn2$subsample[combn2$var=="FLI"])
 combn2$AgUrbanCode21_1k <- apply(combn2[, c("Ag_2000_1K", "CODE_21_2000_1K",
                                             "URBAN_2000_1K")], 1, sum, na.rm=TRUE)
 combn2$Condition <- ifelse(grepl("Ref", combn2$SiteSet), "Reference", ifelse(

@@ -66,7 +66,7 @@ oemodels <- lapply(c(200, 300, 500, 100), function(s){
                         norm.votes = TRUE, keep.forest = TRUE)
   list(mod = rfmod, calibration = bugs_pa_cal, calibration_preds = predictors_cal)
 })
-save(oemodels, file="oemodelsv2_20140328.rdata")
+# save(oemodels, file="oemodelsv2_20140328.rdata")
 
 
 

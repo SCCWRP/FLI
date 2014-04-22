@@ -7,3 +7,5 @@ results21022014.rdata
 rfmodels_allmetrics.rdata
 BMI100.rdata
 move
+data/mmimodels.rdata
+data/oemodels.rdata

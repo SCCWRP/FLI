@@ -6,7 +6,7 @@ options(stringsAsFactors=FALSE)
 
 b1 <- read.csv("L:/CSCI_ME/bugs_sub.csv")
 s1 <- read.csv("L:/CSCI_ME/stations_sub.csv")
-test2 <- fli(b1, s1, 500)
+test2 <- fli(b1, s1, 300)
 
 
 

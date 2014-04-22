@@ -5,18 +5,15 @@ library(reshape2)
 library(BMIMetrics)
 library(ggmap)
 source("r/aggregate_family.r")
-source("P:/MarkEngeln/r functions/find_replace.r")
+source("r/find_replace.r")
 
-# load("data/station.rdata")
-# BMI <- read.csv("data/full_BMI_metrics.csv")
-# BMI[is.na(BMI)] <- 0
-# BMI <- BMI[, colwise(function(x)length(unique(x)))(BMI) > 5]
-stations <- rbind(read.csv("L:/CSCI_ME/temp/development_data/andy/stations.ref.csv"),
-                  read.csv("L:/CSCI_ME/temp/development_data/andy/stations.nonref.csv"))
+
+stations <- rbind(read.csv("data/stations.ref.csv"),
+                  read.csv("data/stations.nonref.csv"))
 bugs_all <-local({
   load("data/metadata.rdata")
-  bugs<- rbind(read.csv("L:/CSCI_ME/temp/development_data/andy/bugs.ref.csv"),
-               read.csv("L:/CSCI_ME/temp/development_data/andy/bugs.nonref.csv"))
+  bugs<- rbind(read.csv("data/bugs.ref.csv"),
+               read.csv("data/bugs.nonref.csv"))
   bugs$FinalID <- str_trim(bugs$FinalID)
   replace <- c("Microtendipes Rydalensis Group", "Orthocladius Complex", "Cricotopus Bicinctus Group", "Cricotopus Trifascia Group")
   bugs$FinalID <- find_replace(bugs$FinalID, replace, c("Microtendipes rydalensis group", 
@@ -28,16 +25,11 @@ bugs_all <-local({
 })
 bugs_all$LifeStageCode <- toupper(as.character(bugs_all$LifeStageCode))
 bugs_all$LifeStageCode[bugs_all$LifeStageCode == ""] <- "L"
-# bugs2 <- ddply(bugs_all, .(SampleID, Family_OTU, LifeStageCode, Distinct),
-#                summarise, BAResult = sum(BAResult))
-# 
-# names(bugs2)[2] <- "FinalID"
-# bugs2 <- bugs2[!bugs2$FinalID %in% c("Unambiguous_NotAtRefCal", "Exclude", "Ambiguous"), ]
-# bugs2 <- bugs2[bugs2$FinalID != "Corydalidae" & bugs2$LifeStageCode != "A", ]
-# bugs2 <- bugs2[bugs2$FinalID != "Deuterophlebiidae" & bugs2$LifeStageCode != "A", ]
+
 
 BMI <- BMI(bugs_all)
 BMImets <- lapply(c(200, 300, 500, 100), function(s){
+  set.seed(12345)
   BMI <- sample(BMI, s)
   BMI <- aggregate(BMI)
   BMIall(BMI, 1)
@@ -70,6 +62,7 @@ test <- lapply(BMIlevels, function(BMI){
   
   rfmods <- lapply(as.list(subset(BMI, select = Invasive_Percent:Noninsect_Taxa)), function(response){
     response[is.na(response)] <- 0 
+    set.seed(12345)
     randomForest(x = stations[, natural_preds], y = response, ntree = 1000)})
   rfmods
 })
@@ -148,6 +141,7 @@ mmimodels <- Map(function(mets, BMI){
   BMIstations <- na.omit(BMIstations[, c(envpreds, metrics, "SiteSet", "SampleID")])
   preds <- BMIstations[BMIstations$SiteSet == "RefCal", envpreds]
   convenient_models <- lapply(as.list(BMIstations[BMIstations$SiteSet == "RefCal", metrics]), function(met){  
+    set.seed(12345)
     randomForest(x=preds,
                  y=met, ntree=1000)
   })

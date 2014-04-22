@@ -1,4 +1,4 @@
-source("P:/MarkEngeln/r functions/find_replace.r")
+source("r/find_replace.r")
 
 load("data/station.rdata")
 BMI <- read.csv("data/full_BMI_metrics.csv")
@@ -6,7 +6,7 @@ BMI[is.na(BMI)] <- 0
 BMI <- BMI[, colwise(function(x)length(unique(x)))(BMI) > 5]
 bugs_all <-local({
   load("data/metadata.rdata")
-  bugs<- rbind(read.csv("development_data/andy/bugs.ref.csv"), read.csv("development_data/andy/bugs.nonref.csv"))
+  bugs<- rbind(read.csv("data/bugs.ref.csv"), read.csv("data/bugs.nonref.csv"))
   bugs$FinalID <- str_trim(bugs$FinalID)
   replace <- c("Microtendipes Rydalensis Group", "Orthocladius Complex", "Cricotopus Bicinctus Group", "Cricotopus Trifascia Group")
   bugs$FinalID <- find_replace(bugs$FinalID, replace, c("Microtendipes rydalensis group", 

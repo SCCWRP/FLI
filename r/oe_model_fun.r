@@ -5,6 +5,7 @@ rcomm <- function(x, num){
   x <- as.data.frame(t(x))
   t(mapply(function(id, s){
     if(all(id == 0))return(id)
+    set.seed(12345)
     res <- table(sample(rep(taxa, id), s))
     ret <- rep(0, length(id))
     names(ret) <- taxa
