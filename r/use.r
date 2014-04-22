@@ -5,9 +5,9 @@ library(randomForest)
 library(reshape2)
 source("r/gis.r")
 
-load("L:/CSCI_ME/FamilyIndex/data/metadata.rdata")
-load("move/mmimodelsV2_20140227.rdata")
-load("move/oemodelsv2_20140328.rdata")
+load("data/metadata.rdata")
+load("data/mmimodels.rdata")
+load("data/oemodels.rdata")
 
 fli_oe <- function(bugs, pred, size){
   
