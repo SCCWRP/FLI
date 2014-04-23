@@ -26,14 +26,21 @@ shinyServer(function(input, output, session){
   output$mf <- renderImage(list(src=mayfly), deleteFile=FALSE)
   
    
-  output$dlhandler <- downloadHandler("FLI_results.tar",
+#   output$dlhandler <- downloadHandler("FLI_results.tar",
+#                                       function(f){
+#                                         if(!file.exists("result"))dir.create("result")
+#                                         ns <- paste0("result//", names(results()), ".csv")
+#                                         mapply(function(x,y)write.csv(x, y), results(), ns)
+#                                         tar(f, "result")
+#                                       })
+  output$dlhandler <- downloadHandler(function()paste0(input$report, ".csv"),
                                       function(f){
-                                        if(!file.exists("result"))dir.create("result")
-                                        ns <- paste0("result//", names(results()), ".csv")
-                                        mapply(function(x,y)write.csv(x, y), results(), ns)
-                                        tar(f, "result")
+                                        rn <- ifelse(input$report %in% c("captureProbs",
+                                                                         "groupProbs"),
+                                                     TRUE, FALSE)
+                                        write.csv(results()[[input$report]], f,
+                                                  row.names=rn)
                                       })
-
 })
 
 

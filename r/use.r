@@ -48,6 +48,7 @@ fli_oe <- function(bugs, pred, size){
     
     
     group_probs <- predict(rfmodel, newdata = predictors, type = 'prob')
+    row.names(group_probs) <- predictors$StationCode
     group_occurence <- apply(calibration, 2, function(x)tapply(x, calibration_preds$GroupID, mean))
     capture_probs <- group_probs %*% group_occurence
     row.names(capture_probs) <- row.names(bugs_pa)
@@ -98,33 +99,13 @@ fli_mmi <- function(bugs, pred, size) {
 
 
   set <- mmimodels[[match(size, c(200, 300, 500, 100))]]
-
-  mets <- local({
-    
-    bugs2 <- join(bugs, BMIMetrics::loadMetaData(), by=c("FinalID", "LifeStageCode"),
-                  type="left")
-    
-    ddply(bugs2, .(SampleID), summarise,
-          StationCode = unique(StationCode),
-          Intolerant_PercentTaxa = mean(ToleranceValue <= 2, na.rm=TRUE),
-          Clinger_Taxa = sum(Habit == "CN", na.rm=TRUE),
-          Noninsect_PercentTaxa = mean(Class != "Insecta", na.rm=TRUE),
-          Ephemeroptera_Taxa = sum(Order == "Ephemeroptera", na.rm=TRUE),
-          Plecoptera_PercentTaxa = mean(Order == "Plecoptera", na.rm=TRUE),
-          Plecoptera_Taxa = sum(Order == "Plecoptera", na.rm=TRUE),
-          Trichoptera_Taxa = sum(Order == "Trichoptera", na.rm=TRUE),
-          Shredder_Taxa = sum(FunctionalFeedingGroup == "SH", na.rm=TRUE),
-          Shredder_PercentTaxa = mean(FunctionalFeedingGroup == "SH", na.rm=TRUE),
-          EPT_PercentTaxa = mean(Order %in% c("Ephemeroptera",
-                                              "Plecoptera",
-                                              "Trichoptera"), na.rm=TRUE),
-          EPT_Taxa = sum(Order %in% c("Ephemeroptera",
-                                      "Plecoptera",
-                                      "Trichoptera"), na.rm=TRUE),
-          Predator_PercentTaxa = mean(FunctionalFeedingGroup == "P", na.rm=TRUE)
-          )
-  })
-
+  
+  BMI <- sample(BMI(bugs), size)
+  BMI <- aggregate(BMI)
+  mets <- BMIall(BMI, 1)
+  mets$StationCode <- bugs$StationCode[match(mets$SampleID,
+                                             bugs$SampleID)]
+  
   BMIstations <- join(mets, stations, by="StationCode", match="first")
   metricsL <- strsplit(set[[1]], "_")
   metrics <- sapply(metricsL, function(x)paste(x[1], x[2], sep="_"))
@@ -132,9 +113,9 @@ fli_mmi <- function(bugs, pred, size) {
   minmax <- set[[3]]
   
   scores <- mapply(function(metric, resid){
-    x <- predict(set[[2]][[metric]], BMIstations)
+    x <- BMIstations[, metric]
     if(!is.na(resid))
-      x <- BMIstations[, metric] - x
+      x <-  x - predict(set[[2]][[metric]], BMIstations)
     if(metric == "Noninsect_PercentTaxa"){
       (x - minmax[metric, "max_i"])/(minmax[metric, "min_i"] - minmax[metric, "max_i"])
     } else
@@ -144,16 +125,16 @@ fli_mmi <- function(bugs, pred, size) {
   if(class(scores) != "matrix"){
     scores <- t(scores)
   }
-  
+  colnames(scores) <- set[[1]]
   scores[scores < 0] <- 0
   
   scores <- as.data.frame(scores)
 
   scores$SampleID <- BMIstations$SampleID
-  scores$SiteSet <- BMIstations$SiteSet
   scores$MMI <- apply(scores[, 1:length(metrics)], 1, mean, na.rm=TRUE)
   
-  list(scores, mets)
+  list(scores[, c("SampleID", set[[1]], "MMI")],
+       mets[, c("StationCode", metrics)])
  }
 
 

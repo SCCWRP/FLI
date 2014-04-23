@@ -19,7 +19,14 @@ shinyUI(pageWithSidebar(
     tags$br(),
     tableOutput("results"),
     tags$br(),
-    downloadButton("dlhandler", "Download Full Report")
+    selectInput("report", "Select Report", c("core",
+                                             "captureProbs",
+                                             "groupProbs",
+                                             "metrics",
+                                             "scores",
+                                             "stationGIS"),
+                selected = "core"),
+    downloadButton("dlhandler", "Get Report")
   ) 
 ))
 

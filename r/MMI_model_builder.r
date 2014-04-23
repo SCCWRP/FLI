@@ -151,8 +151,6 @@ mmimodels <- Map(function(mets, BMI){
     x <- predict(convenient_models[[metric]], BMIstations)
     if(grepl("residual", mets[grepl(metric, mets)]))
       BMIstations[, metric] <- BMIstations[, metric] - x
-    else
-      BMIstations[, metric] <- x
     data.frame(
       min_d = quantile(BMIstations[BMIstations$SiteSet == "StressCal", metric], 0.05, na.rm=TRUE),
       max_d = quantile(BMIstations[BMIstations$SiteSet == "RefCal", metric], 0.95, na.rm=TRUE),

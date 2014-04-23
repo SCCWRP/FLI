@@ -75,18 +75,30 @@ validation <- function(sub){
   acc_val <- summary(aov(data=res[res$SiteSet %in% c("RefVal") & res$select == "Selected", ],
                          FLI ~ as.factor(PSA9c)))[[1]]$"F value"[1]
   
-#   res <- merge(res, stations)
+
   stressmod <- randomForest(data = na.omit(res[, c("FLI", stressors)]),
                             FLI ~ .)
+  
   naturalmod <- randomForest(data = na.omit(res[res$SiteSet == "RefCal", c("FLI", "TEMP_00_09", "PPT_00_09",
                                                                   "SITE_ELEV",
                                                                   "New_Lat")]),
                              FLI ~ .)
   
+  
   sens_cal <- t.test(res$FLI[res$SiteSet == "RefCal"], res$FLI[res$SiteSet == "StressCal"])
   sens_val <- t.test(res$FLI[res$SiteSet == "RefVal"], res$FLI[res$SiteSet == "StressVal"])
   
-  prec <- mean(ddply(res1, .(StationCode), summarize, var=sd(FLI))$var, na.rm=TRUE)
+  prec <- ddply(res1, .(StationCode), function(x){
+    if(nrow(x) <= 1)
+      data.frame(value = NA,
+                 count = NA)
+    else
+     data.frame(value = (nrow(x) - 1)*var(x$FLI),
+                count = nrow(x) - 1)
+  })
+  
+  prec <- sum(prec$value, na.rm=TRUE)/(sum(prec$count, na.rm=TRUE))
+
   
   data.frame(size = sub,
              sensitivity_cal = sens_cal$statistic,
