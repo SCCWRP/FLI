@@ -112,10 +112,12 @@ fli_mmi <- function(bugs, pred, size) {
   type <- sapply(metricsL, "[", 3)
   minmax <- set[[3]]
   
+  predicted <- as.data.frame(sapply(metrics, function(m){
+    predict(set[[2]][[m]], BMIstations)
+  }))
+  
   scores <- mapply(function(metric, resid){
-    x <- BMIstations[, metric]
-    if(!is.na(resid))
-      x <-  x - predict(set[[2]][[metric]], BMIstations)
+    x <- BMIstations[, metric] - predicted[, metric]
     if(metric == "Noninsect_PercentTaxa"){
       (x - minmax[metric, "max_i"])/(minmax[metric, "min_i"] - minmax[metric, "max_i"])
     } else
@@ -133,8 +135,19 @@ fli_mmi <- function(bugs, pred, size) {
   scores$SampleID <- BMIstations$SampleID
   scores$MMI <- apply(scores[, 1:length(metrics)], 1, mean, na.rm=TRUE)
   
-  list(scores[, c("SampleID", set[[1]], "MMI")],
-       mets[, c("StationCode", metrics)])
+  full <- scores
+  names(full)[names(full) != "SampleID"] <- paste0(names(full)[names(full) != "SampleID"],
+                                                   "_score")
+  names(predicted) <- paste0(names(predicted), "_predicted")
+  mets <- mets[, c("StationCode", metrics)]
+  names(mets)[!names(mets) %in% c("StationCode", "SampleID")] <-
+    paste0(names(mets)[!names(mets) %in% c("StationCode", "SampleID")],
+           "_raw")
+  full <- cbind(full, predicted, mets)
+  first <-c("StationCode", "SampleID")
+  full <- full[, c(first, names(full)[!names(full) %in% first])]
+  
+  list(scores, full)
  }
 
 
@@ -149,7 +162,7 @@ fli <- function(bugs, pred, sampleSize = 300) {
                    "E", "O", "OoverE",
                    "MMI")]
   core$FLI <- apply(core[, c("OoverE", "MMI")], 1, mean)
-  list(core = core, metrics = mmi[[2]], scores=mmi[[1]],
+  list(core = core, metrics = mmi[[2]],
        captureProbs = oe[[2]], groupProbs = oe[[3]],
        stationGIS = pred)
 }

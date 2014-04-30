@@ -88,7 +88,7 @@ validation <- function(sub){
   sens_cal <- t.test(res$FLI[res$SiteSet == "RefCal"], res$FLI[res$SiteSet == "StressCal"])
   sens_val <- t.test(res$FLI[res$SiteSet == "RefVal"], res$FLI[res$SiteSet == "StressVal"])
   
-  prec <- ddply(res1, .(StationCode), function(x){
+  prec <- ddply(res1[res1$SiteSet %in% c("RefCal"), ], .(StationCode), function(x){
     if(nrow(x) <= 1)
       data.frame(value = NA,
                  count = NA)
@@ -97,7 +97,7 @@ validation <- function(sub){
                 count = nrow(x) - 1)
   })
   
-  prec <- sum(prec$value, na.rm=TRUE)/(sum(prec$count, na.rm=TRUE))
+  prec <- sqrt(sum(prec$value, na.rm=TRUE)/(sum(prec$count, na.rm=TRUE)))
 
   
   data.frame(size = sub,
@@ -190,3 +190,7 @@ ggplot(combn2[combn2$var != "CSCI", ], aes(AgUrbanCode21_1k, value)) +
   scale_color_discrete("") +
   theme(text=element_text(size=18)) +
   ylab("FLI - CSCI") #+ ylim(0, 1.5) 
+
+ggplot(test, aes(size, precision)) + geom_point(size=3) +
+  theme_bw() + theme(text=element_text(size=20)) +
+  xlab("Subsample Size") + ylab("Pooled SD")

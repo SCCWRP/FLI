@@ -3,7 +3,7 @@ library(shinyIncubator)
 
 source("r/use.r")
 options(error = stop)
-mayfly <- normalizePath(file.path(getwd(), "img", "mayfly_side.jpg"))
+mayfly <- normalizePath(file.path(getwd(), "img", "baetis_habitus3.png"))
 shinyServer(function(input, output, session){
   
   ### FLI SECTION ###
@@ -25,14 +25,6 @@ shinyServer(function(input, output, session){
   output$results <- renderTable(results()[[1]])
   output$mf <- renderImage(list(src=mayfly), deleteFile=FALSE)
   
-   
-#   output$dlhandler <- downloadHandler("FLI_results.tar",
-#                                       function(f){
-#                                         if(!file.exists("result"))dir.create("result")
-#                                         ns <- paste0("result//", names(results()), ".csv")
-#                                         mapply(function(x,y)write.csv(x, y), results(), ns)
-#                                         tar(f, "result")
-#                                       })
   output$dlhandler <- downloadHandler(function()paste0(input$report, ".csv"),
                                       function(f){
                                         rn <- ifelse(input$report %in% c("captureProbs",

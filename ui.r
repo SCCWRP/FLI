@@ -1,9 +1,11 @@
 library(shiny)
 
 shinyUI(pageWithSidebar(
+  
   headerPanel("Family Level Index"),
   
   sidebarPanel(
+    includeCSS("css/flicss.css"),
     HTML(readLines("html/fli_instructions.html")),
     tags$br(),
     tags$br(),
@@ -23,7 +25,6 @@ shinyUI(pageWithSidebar(
                                              "captureProbs",
                                              "groupProbs",
                                              "metrics",
-                                             "scores",
                                              "stationGIS"),
                 selected = "core"),
     downloadButton("dlhandler", "Get Report")

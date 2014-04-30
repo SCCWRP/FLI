@@ -18,10 +18,8 @@ mmimodels <- Map(function(mets, BMI){
   BMIstations <- na.omit(BMIstations[, c(metrics, envpreds, "SampleID", "SiteSet")])
   minmax <- Reduce(rbind, lapply(metrics, function(metric){
     
-    if(grepl("residual", mets[grepl(metric, mets)])){
-      x <- predict(convenient_models[[metric]], BMIstations)
-      BMIstations[, metric] <- BMIstations[, metric] - x
-    }
+    x <- predict(convenient_models[[metric]], BMIstations)
+    BMIstations[, metric] <- BMIstations[, metric] - x
       
     data.frame(
       min_d = quantile(BMIstations[BMIstations$SiteSet == "StressCal", metric], 0.05, na.rm=TRUE),
@@ -40,7 +38,6 @@ mmimodels <- Map(function(mets, BMI){
       (x - minmax[metric, "min_d"])/(minmax[metric, "max_d"] - minmax[metric, "min_d"])
   })
   
-  #   scores[scores > 1] <- 1
   scores[scores < 0] <- 0
   scores <- as.data.frame(scores)
   scores$SampleID <- BMIstations$SampleID
