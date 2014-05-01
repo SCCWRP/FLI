@@ -22,9 +22,9 @@ shinyUI(pageWithSidebar(
     tableOutput("results"),
     tags$br(),
     selectInput("report", "Select Report", c("core",
-                                             "captureProbs",
+                                             "OE_supplement",
                                              "groupProbs",
-                                             "metrics",
+                                             "pMMI_supplement",
                                              "stationGIS"),
                 selected = "core"),
     downloadButton("dlhandler", "Get Report")

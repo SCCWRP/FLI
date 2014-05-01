@@ -4,16 +4,20 @@ library(plyr)
 library(randomForest)
 library(reshape2)
 source("r/gis.r")
+source("r/aggregate_family.r")
 
 load("data/metadata.rdata")
 load("data/mmimodels.rdata")
 load("data/oemodels.rdata")
+
 
 fli_oe <- function(bugs, pred, size){
   
   ### OE###
   
   bugs$Family_OTU <- as.character(metadata$Family_OTU[match(bugs$FinalID, metadata$FinalID)])
+  observed <- ddply(bugs, .(SampleID, Family_OTU), summarise,
+                    O = sum(BAResult))
   
   communityMatrix <- function(bugs, OTU, x=size){ # x = value to subsample to
     bugs.sub <- bugs[bugs[, OTU] %nin% c("Exclude", "Ambiguous", "NA"), ]
@@ -30,10 +34,11 @@ fli_oe <- function(bugs, pred, size){
                              cutoff = 0.5){
  
     qc <- ddply(bugs, .(SampleID), summarise,
-                count = length(Family_OTU),
-                excluded = sum(Family_OTU %in% c("Unambiguous_NotAtRefCal", "Exclude")),
-                prctAmbiguousIndividuals = 100*mean(Family_OTU == "Ambiguous"),
+                count = sum(BAResult),
+                excluded = sum(BAResult[Family_OTU %in% c("Unambiguous_NotAtRefCal", "Exclude")]),
+                prctAmbiguousIndividuals = 100*mean(BAResult[Family_OTU == "Ambiguous"]),
                 prctAmbiguousTaxa = 100*mean(unique(Family_OTU) == "Ambiguous"))
+    qc$prctAmbiguousIndividuals[is.nan(qc$prctAmbiguousIndividuals)] <- 0
     
     excluded <- bugs$Family_OTU %in% c("Unambiguous_NotAtRefCal", "Exclude", "Ambiguous")
     bugs <- bugs[!excluded, ]
@@ -43,8 +48,6 @@ fli_oe <- function(bugs, pred, size){
     predictors <- join(
       unique(bugs[, c("StationCode", "SampleID")]), predictors, match="first", by="StationCode"
     )
-    
-    bugs_pa <- bugs_pa[as.character(predictors$SampleID), , drop=FALSE]
     
     
     group_probs <- predict(rfmodel, newdata = predictors, type = 'prob')
@@ -87,6 +90,14 @@ fli_oe <- function(bugs, pred, size){
   }
   
   oe <- OEModelPredict(bugs, pred)
+  oe$Capture_Probs <- melt(oe$Capture_Probs)
+  oe$Capture_Probs$StationCode <- bugs$StationCode[match(oe$Capture_Probs[, 1],
+                                                         bugs$SampleID)]
+  names(oe$Capture_Probs) <- c("SampleID", "Family_OTU", "CaptureProb", "StationCode")
+  oe$Capture_Probs <- merge(oe$Capture_Probs, observed, all.x=TRUE)
+  oe$Capture_Probs$O[is.na( oe$Capture_Probs$O)] <- 0
+  oe$Capture_Probs <- oe$Capture_Probs[, c("StationCode", "SampleID",
+                                           "Family_OTU", "CaptureProb", "O")]
   oe
 }
 
@@ -140,13 +151,12 @@ fli_mmi <- function(bugs, pred, size) {
                                                    "_score")
   names(predicted) <- paste0(names(predicted), "_predicted")
   mets <- mets[, c("StationCode", metrics)]
-  names(mets)[!names(mets) %in% c("StationCode", "SampleID")] <-
-    paste0(names(mets)[!names(mets) %in% c("StationCode", "SampleID")],
-           "_raw")
+
   full <- cbind(full, predicted, mets)
   first <-c("StationCode", "SampleID")
   full <- full[, c(first, names(full)[!names(full) %in% first])]
   
+  full <- full[, c("StationCode", sort(names(full)[names(full) != "StationCode"]))]
   list(scores, full)
  }
 
@@ -162,8 +172,8 @@ fli <- function(bugs, pred, sampleSize = 300) {
                    "E", "O", "OoverE",
                    "MMI")]
   core$FLI <- apply(core[, c("OoverE", "MMI")], 1, mean)
-  list(core = core, metrics = mmi[[2]],
-       captureProbs = oe[[2]], groupProbs = oe[[3]],
+  list(core = core, pMMI_supplement = mmi[[2]],
+       OE_supplement = oe[[2]], groupProbs = oe[[3]],
        stationGIS = pred)
 }
 
