@@ -5,6 +5,7 @@ library(randomForest)
 library(reshape2)
 source("r/gis.r")
 source("r/aggregate_family.r")
+source("r/jimconvert.r")
 
 load("data/metadata.rdata")
 load("data/mmimodels.rdata")
@@ -15,7 +16,8 @@ fli_oe <- function(bugs, pred, size){
   
   ### OE###
   
-  bugs$Family_OTU <- as.character(metadata$Family_OTU[match(bugs$FinalID, metadata$FinalID)])
+  bugs$Family_OTU <- as.character(metadata$Family_OTU[match(toupper(bugs$FinalID),
+                                                            toupper(metadata$FinalID))])
   observed <- ddply(bugs, .(SampleID, Family_OTU), summarise,
                     O = sum(BAResult))
   
@@ -144,7 +146,7 @@ fli_mmi <- function(bugs, pred, size) {
   scores <- as.data.frame(scores)
 
   scores$SampleID <- BMIstations$SampleID
-  scores$MMI <- apply(scores[, 1:length(metrics)], 1, mean, na.rm=TRUE)
+  scores$pMMI <- apply(scores[, 1:length(metrics)], 1, mean, na.rm=TRUE)
   
   full <- scores
   names(full)[names(full) != "SampleID"] <- paste0(names(full)[names(full) != "SampleID"],
@@ -153,16 +155,19 @@ fli_mmi <- function(bugs, pred, size) {
   mets <- mets[, c("StationCode", metrics)]
 
   full <- cbind(full, predicted, mets)
+  full <- full[, names(full) != "pMMI_score"]
   first <-c("StationCode", "SampleID")
-  full <- full[, c(first, names(full)[!names(full) %in% first])]
   
-  full <- full[, c("StationCode", sort(names(full)[names(full) != "StationCode"]))]
+  full <- full[, c(first, sort(names(full)[!names(full) %in% first]))]
   list(scores, full)
  }
 
 
 
 fli <- function(bugs, pred, sampleSize = 300) {
+  bugs$FinalID <- as.character(metadata$FinalID[match(toupper(bugs$FinalID),
+                                                            toupper(metadata$FinalID))])
+  bugs$FinalID <- worksheetConvert(bugs$FinalID)  
   oe <- fli_oe(bugs, pred, sampleSize)
   mmi <- fli_mmi(bugs, pred, sampleSize)
   core <- merge(mmi[[1]], oe[[1]])
@@ -170,8 +175,8 @@ fli <- function(bugs, pred, sampleSize = 300) {
                    "prctAmbiguousIndividuals",
                    "prctAmbiguousTaxa",
                    "E", "O", "OoverE",
-                   "MMI")]
-  core$FLI <- apply(core[, c("OoverE", "MMI")], 1, mean)
+                   "pMMI")]
+  core$FLI <- apply(core[, c("OoverE", "pMMI")], 1, mean)
   list(core = core, pMMI_supplement = mmi[[2]],
        OE_supplement = oe[[2]], groupProbs = oe[[3]],
        stationGIS = pred)
