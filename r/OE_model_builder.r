@@ -19,7 +19,7 @@ predictors <- rename(predictors, c("New_Lat"="Lat", "New_Long"="Long",
                                    "PPT_00_09"="ppt", "TEMP_00_09"="temp",
                                    "SITE_ELEV"="elevation"))
 
-oemodels <- lapply(c(200, 300, 500, 100), function(s){
+oemodels <- lapply(c(100, 500), function(s){
   
   ## Step 1B - Input the bug data as a site-by-taxa matrix, and subsample.
   

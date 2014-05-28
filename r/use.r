@@ -29,7 +29,7 @@ fli_oe <- function(bugs, pred, size){
     rrarefy(bugall, samp)
   }
   
-  set <- oemodels[[match(size, c(100, 200, 300, 500))]]
+  set <- oemodels[[match(size, c(100, 500))]]
   OEModelPredict <- function(bugs, predictors, rfmodel = set$mod,
                              calibration = set$calibration, 
                              calibration_preds = set$calibration_preds,
@@ -111,7 +111,7 @@ fli_mmi <- function(bugs, pred, size) {
                        "SITE_ELEV", "TEMP_00_09", "PPT_00_09")]
 
 
-  set <- mmimodels[[match(size, c(200, 300, 500, 100))]]
+  set <- mmimodels[[match(size, c(500, 100))]]
   
   BMI <- sample(BMI(bugs), size)
   BMI <- aggregate(BMI)
@@ -124,10 +124,10 @@ fli_mmi <- function(bugs, pred, size) {
   metrics <- sapply(metricsL, function(x)paste(x[1], x[2], sep="_"))
   type <- sapply(metricsL, "[", 3)
   minmax <- set[[3]]
-  
+
   predicted <- as.data.frame(sapply(metrics, function(m){
     predict(set[[2]][[m]], BMIstations)
-  }))
+  }, simplify = FALSE))
   
   scores <- mapply(function(metric, resid){
     x <- BMIstations[, metric] - predicted[, metric]
@@ -164,7 +164,7 @@ fli_mmi <- function(bugs, pred, size) {
 
 
 
-fli <- function(bugs, pred, sampleSize = 300) {
+fli <- function(bugs, pred, sampleSize = 100) {
   bugs$FinalID <- as.character(metadata$FinalID[match(toupper(bugs$FinalID),
                                                             toupper(metadata$FinalID))])
   bugs$FinalID <- worksheetConvert(bugs$FinalID)  

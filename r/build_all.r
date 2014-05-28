@@ -45,7 +45,7 @@ mmimodels <- Map(function(mets, BMI){
   scores$MMI <- apply(scores[, 1:(ncol(scores)-2)], 1, mean, na.rm=TRUE)
   scores$MMI <- scores$MMI / mean(scores$MMI[scores$SiteSet == "RefCal"])
   list(mets, convenient_models, minmax, scores)
-}, selected, BMIlevels)
+}, selected[3:4], BMIlevels[3:4])
 
 save(oemodels, file="data/oemodels.rdata")
 save(mmimodels, file="data/mmimodels.rdata")
