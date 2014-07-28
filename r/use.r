@@ -165,9 +165,10 @@ fli_mmi <- function(bugs, pred, size) {
 
 
 fli <- function(bugs, pred, sampleSize = 100) {
-  bugs$FinalID <- as.character(metadata$FinalID[match(toupper(bugs$FinalID),
-                                                            toupper(metadata$FinalID))])
   bugs$FinalID <- worksheetConvert(bugs$FinalID)  
+  inDB <- toupper(bugs$FinalID) %in% toupper(metadata$FinalID)
+  bugs$FinalID[inDB] <- as.character(metadata$FinalID[inDB][match(toupper(bugs$FinalID),
+                                                            toupper(metadata$FinalID))])
   oe <- fli_oe(bugs, pred, sampleSize)
   mmi <- fli_mmi(bugs, pred, sampleSize)
   core <- merge(mmi[[1]], oe[[1]])

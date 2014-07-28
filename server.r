@@ -12,14 +12,10 @@ shinyServer(function(input, output, session){
   
   results <- reactive({
     if(input$bug_submit > 0){
-    bugs <- read.csv(isolate(input$bugs$datapath))
-    stations <- generate_stations(read.csv(isolate(input$GIS$datapath)))
-    tryCatch(fli(bugs, stations, as.numeric(input$sampleSize)),
-             error = function(e){
-               cat("\n")
-               print(e)
-               list(data.frame(ThereWasAnError=NA))})
-    } else list(test = data.frame(SampleID = NA,
+      bugs <- read.csv(isolate(input$bugs$datapath))
+      stations <- generate_stations(read.csv(isolate(input$GIS$datapath)))
+      try(fli(bugs, stations, as.numeric(input$sampleSize)))
+    } else list(test = data.frame(SampleID = NA, # default data frame
                                   count = NA,
                                   excluded = NA,
                                   pctAmbiguousIndividuals = NA,
@@ -31,7 +27,23 @@ shinyServer(function(input, output, session){
                                   FLI = NA))
   })
   
-  output$results <- renderTable(results()[[1]])
+  
+  output$flitable <- renderTable(results()[[1]])
+  output$results <- renderUI({
+    if(class(results()) == "try-error") # print errors to UI
+      results()
+    else
+      tableOutput("flitable")
+  })
+  
+  output$success <- reactive({
+    if(length(results()) == 5) # tests to see if full report returned
+      1
+    else
+      NULL
+  })
+  outputOptions(output, 'success', suspendWhenHidden=FALSE)
+  
   output$mf <- renderImage(list(src=mayfly), deleteFile=FALSE)
   
   output$dlhandler <- downloadHandler(function()paste0(input$report, ".csv"),

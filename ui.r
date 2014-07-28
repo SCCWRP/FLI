@@ -19,18 +19,16 @@ shinyUI(pageWithSidebar(
     actionButton("bug_submit", "submit"),
     tags$br(),
     tags$br(),
-    tableOutput("results"),
+    uiOutput("results"),
     tags$br(),
-    selectInput("report", "Select Report", c("core",
-                                             "OE_supplement",
-                                             "groupProbs",
-                                             "pMMI_supplement",
-                                             "stationGIS"),
-                selected = "core"),
-    downloadButton("dlhandler", "Get Report")
+    conditionalPanel("input.bug_submit >= 1 && output.success==1",
+                     selectInput("report", "Select Report", c("core",
+                                                              "OE_supplement",
+                                                              "groupProbs",
+                                                              "pMMI_supplement",
+                                                              "stationGIS"),
+                                 selected = "core"),
+                     downloadButton("dlhandler", "Get Report")
+                     )
   ) 
 ))
-
-#gis_result
-
-#!output.gis_result & 
