@@ -276,7 +276,7 @@ if (FALSE) {
     print(xtable(anova(glm.D93)),hline.after=c(1),size="small",type=i,file=outFileName,append=TRUE)
       # print(xtable(pr2),type=i,file=outFileName,append=TRUE)
          }
-} 
+}
 
 
 ###################################################
@@ -473,19 +473,32 @@ print(xtable(anova(glm.D93)),hline.after=c(1),floating=FALSE)
 
 
 ###################################################
-### code chunk number 67: xtableGallery.snw:422-423
+### code chunk number 67: xtableGallery.snw:436-437
 ###################################################
-print(tli.table , booktabs=TRUE)
+print(tli.table, booktabs=TRUE, floating = FALSE)
 
 
 ###################################################
-### code chunk number 68: xtableGallery.snw:427-428
+### code chunk number 68: xtableGallery.snw:449-451
+###################################################
+bktbs <- xtable(matrix(1:10, ncol = 2))
+hlines <- c(-1,0,1,nrow(bktbs))
+
+
+###################################################
+### code chunk number 69: xtableGallery.snw:454-455
+###################################################
+print(bktbs, booktabs = TRUE, hline.after = hlines, floating = FALSE)
+
+
+###################################################
+### code chunk number 70: xtableGallery.snw:460-461
 ###################################################
 print(xtable(anova(glm.D93)),size="small",floating=FALSE)
 
 
 ###################################################
-### code chunk number 69: longtable
+### code chunk number 71: longtable
 ###################################################
 
 ## Demonstration of longtable support.
@@ -495,67 +508,67 @@ x.big <- xtable(x,label='tabbig',
 
 
 ###################################################
-### code chunk number 70: xtableGallery.snw:442-443
+### code chunk number 72: xtableGallery.snw:475-476
 ###################################################
 print(x.big,tabular.environment='longtable',floating=FALSE)
 
 
 ###################################################
-### code chunk number 71: xtableGallery.snw:481-483
+### code chunk number 73: xtableGallery.snw:514-516
 ###################################################
 x <- x[1:30,]
 x.small <- xtable(x,label='tabsmall',caption='A sideways table')
 
 
 ###################################################
-### code chunk number 72: xtableGallery.snw:486-487
+### code chunk number 74: xtableGallery.snw:519-520
 ###################################################
 print(x.small,floating.environment='sidewaystable')
 
 
 ###################################################
-### code chunk number 73: xtableGallery.snw:494-496
+### code chunk number 75: xtableGallery.snw:527-529
 ###################################################
 x <- x[1:20,]
 x.rescale <- xtable(x,label='tabrescaled',caption='A rescaled table')
 
 
 ###################################################
-### code chunk number 74: xtableGallery.snw:499-500
+### code chunk number 76: xtableGallery.snw:532-533
 ###################################################
 print(x.rescale, scalebox=0.7)
 
 
 ###################################################
-### code chunk number 75: xtableGallery.snw:509-519
+### code chunk number 77: xtableGallery.snw:542-552
 ###################################################
 df.width <- data.frame(
-  "label 1 with much more text than is needed" = c("item 1", "A"), 
+  "label 1 with much more text than is needed" = c("item 1", "A"),
   "label 2 is also very long" = c("item 2","B"),
-  "label 3" = c("item 3","C"), 
+  "label 3" = c("item 3","C"),
   "label 4" = c("item 4 but again with too much text","D"),
   check.names = FALSE)
 
-x.width <- xtable(df.width, 
+x.width <- xtable(df.width,
   caption="Using the 'tabularx' environment")
-align(x.width) <- "|l|X|X|l|X|"  
+align(x.width) <- "|l|X|X|l|X|"
 
 
 ###################################################
-### code chunk number 76: xtableGallery.snw:522-524
+### code chunk number 78: xtableGallery.snw:555-557
 ###################################################
-print(x.width, tabular.environment="tabularx", 
+print(x.width, tabular.environment="tabularx",
   width="\\textwidth")
 
 
 ###################################################
-### code chunk number 77: xtableGallery.snw:532-533
+### code chunk number 79: xtableGallery.snw:565-566
 ###################################################
 x.out <- print(tli.table, print.results = FALSE)
 
 
 ###################################################
-### code chunk number 78: xtableGallery.snw:540-543
+### code chunk number 80: xtableGallery.snw:573-576
 ###################################################
 x.ltx <- toLatex(tli.table)
 class(x.ltx)
@@ -563,7 +576,7 @@ x.ltx
 
 
 ###################################################
-### code chunk number 79: xtableGallery.snw:549-550
+### code chunk number 81: xtableGallery.snw:582-583
 ###################################################
 toLatex(sessionInfo())
 

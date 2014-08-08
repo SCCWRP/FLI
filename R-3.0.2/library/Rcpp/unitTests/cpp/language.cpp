@@ -27,7 +27,7 @@ Language runit_language(SEXP x){ return Language(x) ; }
 
 // [[Rcpp::export]]
 Language runit_lang_variadic_1(){
-    return Language( "rnorm", 10, 0.0, 2.0 ) ; 
+    return Language( "rnorm", 10, 0.0, 2.0 ) ;
 }
 
 // [[Rcpp::export]]
@@ -95,9 +95,9 @@ List runit_lang_unarycallindex(IntegerVector x){
     Language call( "seq", 10, 0 ) ;
     List output( x.size() ) ;
     std::transform(
-    	x.begin(), x.end(),
-    	output.begin(),
-    	unary_call<int>(call,2)
+        x.begin(), x.end(),
+        output.begin(),
+        unary_call<int>(call,2)
     	) ;
     return output ;
 }
@@ -107,9 +107,9 @@ List runit_lang_binarycall(IntegerVector x1, IntegerVector x2 ){
     Language call( "seq", Named("from", 10 ), Named("to", 0 ) ) ;
     List output( x1.size() ) ;
     std::transform(
-    	x1.begin(), x1.end(), x2.begin(),
-    	output.begin(),
-    	binary_call<int,int>(call)
+        x1.begin(), x1.end(), x2.begin(),
+        output.begin(),
+        binary_call<int,int>(call)
     	) ;
     return output ;
 }
@@ -174,16 +174,16 @@ Pairlist runit_pl_insert(){
     p.push_back( 1 ) ;
     p.push_back( 10.0 ) ;
     p.push_back( 20.0 ) ;
-    
+
     /* insert in 2nd position */
     p.insert( 1, Named( "bla", "bla" ) ) ;
-    
+
     /* insert in front */
     p.insert( 0, 30.0 ) ;
-    
+
     /* insert in back */
     p.insert( 5, "foobar" ) ;
-    
+
     return p ;
 }
 

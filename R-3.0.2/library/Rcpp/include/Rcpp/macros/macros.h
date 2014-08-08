@@ -1,7 +1,7 @@
 // -*- mode: C++; c-indent-level: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 //
 // macros.h: Rcpp R/C++ interface class library -- Rcpp macros
-//    
+//
 // Copyright (C) 2012 Dirk Eddelbuettel and Romain Francois
 //
 // This file is part of Rcpp.
@@ -27,11 +27,11 @@
 #define RCPP_GET_CLASS(x)       Rf_getAttrib(x, R_ClassSymbol)
 
 #ifndef BEGIN_RCPP
-#define BEGIN_RCPP try{ 
-#endif 
+#define BEGIN_RCPP try{
+#endif
 
 #ifndef VOID_END_RCPP
-#define VOID_END_RCPP } catch( std::exception& __ex__ ){ forward_exception_to_r( __ex__ ) ; } catch(...){ ::Rf_error( "c++ exception (unknown reason)" ) ; }
+#define VOID_END_RCPP } catch( Rcpp::internal::InterruptedException& __ex__ ) { Rf_onintr(); } catch( std::exception& __ex__ ){ forward_exception_to_r( __ex__ ) ; } catch(...){ ::Rf_error( "c++ exception (unknown reason)" ) ; }
 #endif
 
 #ifndef END_RCPP
@@ -39,10 +39,10 @@
 #endif
 
 #ifndef END_RCPP_RETURN_ERROR
-#define END_RCPP_RETURN_ERROR } catch( std::exception& __ex__ ){ return exception_to_try_error( __ex__ ) ; } catch(...){ return string_to_try_error( "c++ exception (unknown reason)" ) ; } return R_NilValue;
+#define END_RCPP_RETURN_ERROR } catch( Rcpp::internal::InterruptedException& __ex__ ) { return Rcpp::internal::interruptedError(); } catch( std::exception& __ex__ ){ return exception_to_try_error( __ex__ ) ; } catch(...){ return string_to_try_error( "c++ exception (unknown reason)" ) ; } return R_NilValue;
 #endif
 
-#define Rcpp_error(MESSAGE) throw Rcpp::exception( MESSAGE, __FILE__, __LINE__ ) 
+#define Rcpp_error(MESSAGE) throw Rcpp::exception( MESSAGE, __FILE__, __LINE__ )
 
 #include <Rcpp/macros/debug.h>
 #include <Rcpp/macros/unroll.h>
@@ -53,5 +53,6 @@
 #include <Rcpp/macros/config.hpp>
 #include <Rcpp/macros/cat.hpp>
 #include <Rcpp/macros/module.h>
+#include <Rcpp/macros/interface.h>
 
 #endif

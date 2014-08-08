@@ -1,6 +1,6 @@
 // -*- mode: C++; c-indent-level: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 //
-// meat.h: Rcpp R/C++ interface class library -- 
+// meat.h: Rcpp R/C++ interface class library --
 //
 // Copyright (C) 2012 - 2013    Dirk Eddelbuettel and Romain Francois
 //
@@ -22,15 +22,24 @@
 #ifndef Rcpp_api_meat_meat_h
 #define Rcpp_api_meat_meat_h
 
-#include <Rcpp/api/meat/RObject.h>
+#include <Rcpp/api/meat/Rcpp_eval.h>
+#include <Rcpp/api/meat/Dimension.h>
+
+#include <Rcpp/api/meat/Date.h>
+#include <Rcpp/api/meat/Datetime.h>
+#include <Rcpp/api/meat/DataFrame.h>
+#include <Rcpp/api/meat/S4.h>
 #include <Rcpp/api/meat/Environment.h>
-#include <Rcpp/api/meat/DottedPair.h>
+
+#include <Rcpp/api/meat/DottedPairImpl.h>
+#include <Rcpp/api/meat/StretchyList.h>
 #include <Rcpp/api/meat/Vector.h>
-#include <Rcpp/api/meat/Matrix.h>
-#include <Rcpp/api/meat/Reference.h>
 #include <Rcpp/api/meat/is.h>
+#include <Rcpp/api/meat/as.h>
 #include <Rcpp/api/meat/export.h>
 #include <Rcpp/api/meat/protection.h>
 #include <Rcpp/api/meat/wrap.h>
+
+#include <Rcpp/api/meat/module/Module.h>
 
 #endif

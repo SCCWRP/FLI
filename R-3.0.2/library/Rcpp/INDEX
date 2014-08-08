@@ -7,12 +7,13 @@ C++Function-class       Class "C++Function"
 C++Object-class         c++ internal objects
 C++OverloadedMethods-class
                         Class "C++OverloadedMethods"
-LdFlags                 Provide Rcpp Linker Flags
+LdFlags                 (Deprecated) Rcpp Linker Flags
 Module                  Retrieves an Rcpp module
 Module-class            Rcpp modules
 Rcpp-package            R / C++ interface
 Rcpp.package.skeleton   Create a skeleton for a new package depending
                         on Rcpp
+Rcpp.plugin.maker       Facilitating making package plugins
 RcppUnitTests           Rcpp : unit tests results
 compileAttributes       Compile Rcpp Attributes for a Package
 cppFunction             Define an R Function with a C++ Implementation

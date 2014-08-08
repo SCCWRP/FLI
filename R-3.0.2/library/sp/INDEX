@@ -47,8 +47,9 @@ bpy.colors              blue-pink-yellow color scheme, which also
 bubble                  Create a bubble plot of spatial data
 char2dms                Convert character vector to DMS-class object
 compassRose             Display a compass rose.
-coordinates             sets spatial coordinates to create spatial
-                        data, or retrieves spatial coordinates
+coordinates             set spatial coordinates to create a Spatial
+                        object, or retrieve spatial coordinates from a
+                        Spatial object
 coordinates-methods     retrieve (or set) spatial coordinates
 coordnames-methods      retrieve or assign coordinate names for classes
                         in sp

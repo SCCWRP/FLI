@@ -4,7 +4,6 @@
 // is_wide_string.h: Rcpp R/C++ interface class library -- traits to help wrap
 //
 // Copyright (C) 2013 Dirk Eddelbuettel and Romain Francois
-// Copyright (C) 2013 Rice University
 //
 // This file is part of Rcpp.
 //
@@ -17,7 +16,7 @@
 // WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-//                         
+//
 // You should have received a copy of the GNU General Public License
 // along with Rcpp.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -29,13 +28,13 @@ namespace traits{
 
     template <typename T>
     struct is_wide_string : public same_type< typename T::value_type, wchar_t > {} ;
-	
+
     template <> struct is_wide_string< const wchar_t* > : public true_type{} ;
     template <> struct is_wide_string< const char* > : public false_type{} ;
-    
+
     template <> struct is_wide_string< wchar_t > : public true_type{} ;
     template <> struct is_wide_string< char > : public false_type{} ;
-    
+
 } // traits
 } // Rcpp
 

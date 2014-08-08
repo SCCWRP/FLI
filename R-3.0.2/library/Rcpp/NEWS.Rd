@@ -2,7 +2,140 @@
 \title{News for Package 'Rcpp'}
 \newcommand{\cpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
-\section{Changes in Rcpp version 0.10.5.2 (2013-10-08)}{
+\section{Changes in Rcpp version 0.11.2 (2014-06-06}{
+  \itemize{
+    \item Changes in Rcpp API:
+    \itemize{
+      \item Implicit conversions, e.g. between \code{NumericVector} and
+      \code{IntegerVector}, will now give warnings if you use
+      \code{\#define RCPP_WARN_ON_COERCE} before including the Rcpp
+      headers.
+      \item Templated \code{List} containers, \code{ListOf<T>}, have been 
+      introduced. When subsetting such containers, the return is assumed 
+      to be of type T, allowing code such as 
+      \code{ListOf<NumericVector> x; NumericVector y = x[0] + x[1] + x[2]}.
+      \item In a number of instances, returned results are protected and/or cast
+      more carefully.
+    }
+    \item Changes in Rcpp Attributes
+    \itemize{
+      \item Trailing line comments are now stripped by the attributes
+      parser. This allows the parser to handle C++ source files
+      containing comments inline with function arguments.
+      \item The \code{USE_CXX1X} environment variable is now defined by 
+      the cpp11 plugin when R >= 3.1. Two additional plugins have been
+      added for use with C++0x (eg when using g++ 4.6.* as on Windows)
+      as well as C++1y for compilers beginning to support the next
+      revision of the standard; additional fallback is provided for
+      Windows. 
+      \item \code{compileAttributes()} now also considers Imports: which
+      may suppress a warning when running \code{Rcpp.package.skeleton()}.
+    }
+  }
+}
+
+\section{Changes in Rcpp version 0.11.1 (2014-03-13)}{
+  \itemize{
+    \item Changes in Rcpp API:
+    \itemize{
+      \item Preserve backwards compatibility with \cpkg{Rcpp} 0.10.* by
+      allowing \code{RObject} extraction from vectors (or lists) of Rcpp
+      objects
+      \item Add missing default constructor to Reference class that was
+      omitted in the header-only rewrite
+      \item Fixes for \code{NA} and \code{NaN} handling of the
+      \code{IndexHash} class, as well as the vector \code{.sort()}
+      method. These fixes ensure that sugar functions depending on
+      \code{IndexHash} (i.e. \code{unique()}, \code{sort_unique()},
+      \code{match()}) will now properly handle \code{NA} and \code{NaN}
+      values for numeric vectors.
+      \item \code{DataFrame::nrows} now more accurately mimics R's
+      internal behavior (checks the row.names attribute)
+      \item Numerous changes to permit compilation on the Solaris OS 
+      \item Rcpp vectors gain a subsetting method -- it is now possible
+      to subset an Rcpp vector using \code{CharacterVector}s (subset
+      by name), \code{LogicalVector}s (logical subsetting), and
+      \code{IntegerVector}s (0-based index subsetting). Such subsetting
+      will also work with Rcpp sugar expressions, enabling expressions
+      such as \code{x[ x > 0]}.
+      \item Comma initialization (e.g. 
+      \code{CharacterVector x = "a", "b", "c";}, has been disabled, as
+      it causes problems with the behavior of the \code{=} operator with
+      \code{Rcpp::List}s. Users who want to re-enable this functionality 
+      can use \code{#define RCPP_COMMA_INITIALIZATION}, but be aware of
+      the above caveat. The more verbose 
+      \code{CharacterVector x = CharacterVector::create("a", "b", "c")}
+      is preferred.
+    }
+    \item Changes in Rcpp Attributes
+    \itemize{
+      \item Fix issue preventing packages with \code{Rcpp::interfaces}
+      attribute from compiling.
+      \item Fix behavior with attributes parsing of \code{::create} for default
+      arguments, and also allow constructors of a given size
+      (e.g. \code{NumericVector v = NumericVector(10))} gives a default
+      value of \code{numeric(10)} at the R level). Also make NAs preserve
+      type when exported to R (e.g. \code{NA_STRING} as a default argument
+      maps to \code{NA_character_} at the R level)
+    }
+    \item Changes in Rcpp modules
+    \itemize{
+      \item Corrected the \code{un_pointer} implementation for \code{object} 
+    }
+  }
+}
+      
+\section{Changes in Rcpp version 0.11.0 (2014-02-02)}{
+  \itemize{
+    \item Changes in Rcpp API:
+    \itemize{
+      \item Functions provided/used by \cpkg{Rcpp} are now registered
+      with R and instantiated by client package alleviating the new for
+      explicit linking against \code{libRcpp} which is therefore no
+      longer created.
+      \item Updated the \code{Rcpp.package.skeleton()} function accordingly.
+      \item New class \code{StretchyList} for pair lists with fast addition of
+      elements at the front and back. This abstracts the 3 functions
+      \code{NewList}, \code{GrowList} and \code{Insert} used in various 
+      packages and in parsers in R. 
+      \item The function \code{dnt}, \code{pnt}, \code{qnt} sugar
+      functions were incorrectly expanding to the no-degree-of-freedoms
+      variant.
+      \item Unit tests for \code{pnt} were added.
+      \item The sugar table function did not handle NAs and NaNs properly
+      for numeric vectors. Fixed and tests added.
+      \item The internal coercion mechanism mapping numerics to strings has
+      been updated to better match \R (specifically with \code{Inf}, \code{-Inf},
+      and \code{NaN}.)
+      \item Applied two bug fixes to Vector \code{sort()} and \code{RObject}
+      definition spotted and corrected by Kevin Ushey
+      \item New \code{checkUserInterrupt()} function that provides a C++ friendly 
+      implementation of \code{R_CheckUserInterrupt}.
+    }
+    \item Changes in Rcpp attributes:
+    \itemize{
+      \item Embedded R code chunks in sourceCpp are now executed within
+      the working directory of the C++ source file.
+      \item Embedded R code chunks in sourceCpp can now be disabled.
+    }
+    \item Changes in Rcpp documentation:
+    \itemize{
+      \item The Rcpp-FAQ and Rcpp-package vignettes have been updated and expanded.
+      \item Vignettes are now typeset with grey background for code boxes.
+      \item The bibtex reference file has been update to reflexct
+      current package versions.
+    }
+    \item Changes in Rcpp unit tests:
+    \itemize{
+      \item The file \code{tests/doRUnit.R} was rewritten following the
+      pattern deployed in \cpkg{RProtoBuf} which is due to Murray Stokely
+      \item The function \code{test()} was rewritten; it provides an
+      easy entry point to running unit tests of the installed package 
+    }
+  }
+}
+
+\section{Changes in Rcpp version 0.10.6 (2013-10-27)}{
   \itemize{
     \item Changes in Rcpp API:
     \itemize{

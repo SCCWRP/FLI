@@ -13,5 +13,6 @@ model.part	model.frame.Formula
 model.part.Formula	model.frame.Formula
 model.part.formula	model.frame.Formula
 print.Formula	Formula
+str.Formula	Formula
 terms.Formula	model.frame.Formula
 update.Formula	Formula

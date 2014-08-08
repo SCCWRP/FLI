@@ -55,6 +55,7 @@ coerce,ppp,SpatialGridDataFrame-method	SpatialGridDataFrame-class
 coerce,ppp,SpatialPoints-method	SpatialPoints-class
 coerce,ppp,SpatialPointsDataFrame-method	SpatialPointsDataFrame-class
 coerce,SpatialGrid,data.frame-method	SpatialGrid-class
+coerce,SpatialGrid,GridTopology-method	GridTopology-class
 coerce,SpatialGrid,SpatialPixels-method	SpatialGrid-class
 coerce,SpatialGrid,SpatialPoints-method	SpatialGrid-class
 coerce,SpatialGrid,SpatialPolygons-method	SpatialGrid-class
@@ -69,6 +70,7 @@ coerce,SpatialLines,SpatialPointsDataFrame-method	SpatialLines-class
 coerce,SpatialLinesDataFrame,data.frame-method	SpatialLinesDataFrame-class
 coerce,SpatialLinesDataFrame,SpatialPointsDataFrame-method	SpatialLinesDataFrame-class
 coerce,SpatialPixels,data.frame-method	SpatialPixels-class
+coerce,SpatialPixels,GridTopology-method	GridTopology-class
 coerce,SpatialPixels,SpatialGrid-method	SpatialPixels-class
 coerce,SpatialPixels,SpatialPolygons-method	as.SpatialPolygons.GridTopology
 coerce,SpatialPixelsDataFrame,data.frame-method	SpatialPixelsDataFrame-class
@@ -232,6 +234,7 @@ image.SpatialGridDataFrame	image
 image.SpatialPixels	image
 image.SpatialPixelsDataFrame	image
 image2Grid	image
+imageScale	image
 is.projected	is.projected
 is.projected,Spatial-method	is.projected
 layout.north.arrow	spplot

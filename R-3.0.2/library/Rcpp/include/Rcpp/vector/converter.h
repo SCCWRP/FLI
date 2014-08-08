@@ -2,7 +2,7 @@
 //
 // converter.h: Rcpp R/C++ interface class library -- converters
 //
-// Copyright (C) 2010 - 2011 Dirk Eddelbuettel and Romain Francois
+// Copyright (C) 2010 - 2013 Dirk Eddelbuettel and Romain Francois
 //
 // This file is part of Rcpp.
 //
@@ -21,68 +21,69 @@
 
 #ifndef Rcpp__vector__converters_h
 #define Rcpp__vector__converters_h
- 
+
+namespace Rcpp{
 namespace internal {
 	template <int RTYPE>
 	class element_converter{
 	public:
 		typedef typename ::Rcpp::traits::storage_type<RTYPE>::type target ;
-		
+
 		template <typename T>
 		static target get( const T& input ){
 			return caster<T,target>(input) ;
 		}
-		
+
 		static target get( const target& input ){
 			return input ;
 		}
 	} ;
-	
+
 	template <int RTYPE>
 	class string_element_converter {
 	public:
 		typedef SEXP target ;
-		
+
 		template <typename T>
 		static SEXP get( const T& input){
 			std::string out(input) ;
 			RCPP_DEBUG_1( "string_element_converter::get< T = %s >()", DEMANGLE(T) )
 			return Rf_mkChar( out.c_str() ) ;
 		}
-		
+
 		static SEXP get(const std::string& input){
 			RCPP_DEBUG( "string_element_converter::get< std::string >()" )
 			return Rf_mkChar( input.c_str() ) ;
 		}
-		
+
 		static SEXP get( const Rcpp::String& input) ;
-		
+
 		static SEXP get(const char& input){
 		    RCPP_DEBUG( "string_element_converter::get< char >()" )
 			return Rf_mkChar( &input ) ;
 		}
-		
+
 		// assuming a CHARSXP
-		static SEXP get(SEXP x){ 
+		static SEXP get(SEXP x){
 		    RCPP_DEBUG( "string_element_converter::get< SEXP >()" )
 		    return x;
 		}
 	} ;
-	
+
 	template <int RTYPE>
 	class generic_element_converter {
 	public:
 		typedef SEXP target ;
-		
+
 		template <typename T>
 		static SEXP get( const T& input){
 			return ::Rcpp::wrap( input ) ;
 		}
-		
+
 		static SEXP get( const char* input){
 			return ::Rcpp::wrap( input );
 		}
-		
+
 		static SEXP get(SEXP input){
 			return input ;
 		}
@@ -102,6 +103,7 @@ namespace traits{
 	template<> struct r_vector_element_converter<EXPRSXP>{
 		typedef ::Rcpp::internal::generic_element_converter<EXPRSXP> type ;
 	} ;
+}
 }
 
 #endif

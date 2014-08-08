@@ -1,3 +1,4 @@
+data.table-package	data.table
 %between%	between
 %chin%	chmatch
 %like%	like
@@ -34,6 +35,8 @@ copy	setkey
 cut.IDate	IDateTime
 data.table	data.table
 data.table-class	data.table-class
+dcast	dcast.data.table
+dcast.data.table	dcast.data.table
 duplicated	duplicated
 duplicated.data.table	duplicated
 format.ITime	IDateTime
@@ -55,6 +58,8 @@ last	last
 like	like
 mday	IDateTime
 mean.IDate	IDateTime
+melt	melt.data.table
+melt.data.table	melt.data.table
 merge	merge
 merge.data.table	merge
 month	IDateTime
@@ -70,6 +75,7 @@ seq.IDate	IDateTime
 set	assign
 setattr	setkey
 setcolorder	setkey
+setDT	setkey
 setkey	setkey
 setkeyv	setkey
 setnames	setkey

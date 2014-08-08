@@ -21,7 +21,8 @@ fli_oe <- function(bugs, pred, size){
   observed <- ddply(bugs, .(SampleID, Family_OTU), summarise,
                     O = sum(BAResult))
   
-  communityMatrix <- function(bugs, OTU, x=size){ # x = value to subsample to
+  communityMatrix <- function(bugs, OTU="Family_OTU", x=size){ # x = value to subsample to
+
     bugs.sub <- bugs[bugs[, OTU] %nin% c("Exclude", "Ambiguous", "NA"), ]
     bugall<- acast(bugs.sub, SampleID ~ Family_OTU, value.var="BAResult", fun.aggregate=sum)
     samp <- rep(x, times=nrow(bugall))
@@ -44,7 +45,7 @@ fli_oe <- function(bugs, pred, size){
     
     excluded <- bugs$Family_OTU %in% c("Unambiguous_NotAtRefCal", "Exclude", "Ambiguous")
     bugs <- bugs[!excluded, ]
-    
+
     bugs_pa <- communityMatrix(bugs)
     bugs_pa[bugs_pa > 0] <- 1
     predictors <- join(
@@ -107,8 +108,9 @@ fli_mmi <- function(bugs, pred, size) {
   ### MMI
   pred <- rename(pred, c("Lat"="New_Lat", "Long"="New_Long",
                   "ppt"="PPT_00_09", "temp"="TEMP_00_09", "elevation"="SITE_ELEV"))
-  stations <- pred[, c("StationCode", "New_Long", "New_Lat", 
-                       "SITE_ELEV", "TEMP_00_09", "PPT_00_09")]
+  statcols <- c("StationCode", "New_Long", "New_Lat", 
+                "SITE_ELEV", "TEMP_00_09", "PPT_00_09")
+  stations <- pred[, statcols]
 
 
   set <- mmimodels[[match(size, c(500, 100))]]
@@ -126,7 +128,7 @@ fli_mmi <- function(bugs, pred, size) {
   minmax <- set[[3]]
 
   predicted <- as.data.frame(sapply(metrics, function(m){
-    predict(set[[2]][[m]], BMIstations)
+    predict(set[[2]][[m]], BMIstations[, statcols])
   }, simplify = FALSE))
   
   scores <- mapply(function(metric, resid){
@@ -165,10 +167,20 @@ fli_mmi <- function(bugs, pred, size) {
 
 
 fli <- function(bugs, pred, sampleSize = 100) {
-  bugs$FinalID <- worksheetConvert(bugs$FinalID)  
   inDB <- toupper(bugs$FinalID) %in% toupper(metadata$FinalID)
-  bugs$FinalID[inDB] <- as.character(metadata$FinalID[inDB][match(toupper(bugs$FinalID),
+  #Fix case
+  bugs$FinalID[inDB] <- as.character(metadata$FinalID[match(toupper(bugs$FinalID)[inDB],
                                                             toupper(metadata$FinalID))])
+
+  #Fix LSC
+  combos <- paste(bugs$FinalID, bugs$LifeStageCode)
+  metacombos <- paste(metadata$FinalID, metadata$LifeStageCode)
+  dbLSC <- combos %in% metacombos
+  wrongLSC <- (!dbLSC) & inDB
+  correctLSCi <- match(bugs$FinalID[wrongLSC], metadata$FinalID)
+  bugs$LifeStageCode[wrongLSC] <- as.character(metadata$DefaultLifeStageCode[correctLSCi])
+    
+  #FLI calculation
   oe <- fli_oe(bugs, pred, sampleSize)
   mmi <- fli_mmi(bugs, pred, sampleSize)
   core <- merge(mmi[[1]], oe[[1]])

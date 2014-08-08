@@ -37,10 +37,10 @@ struct wrap_type_primitive_tag{};
 struct wrap_type_unknown_tag{};
 
 /**
- * module objects pointers (object<T>). conversion done using make_new_object<>() 
+ * module objects pointers (object<T>). conversion done using make_new_object<>()
  */
 struct wrap_type_module_object_pointer_tag{} ;
- 
+
 /**
  * declared module object type (by the RCPP_EXPOSED_CLASS macro)
  */
@@ -50,6 +50,11 @@ struct wrap_type_module_object_tag{} ;
  * enums
  */
 struct wrap_type_enum_tag{} ;
+
+/**
+ * character arrays
+ */
+struct wrap_type_char_array{} ;
 
 /**
  * Type trait that helps the dispatch of wrap to the proper method
@@ -62,6 +67,8 @@ struct wrap_type_enum_tag{} ;
  */
 template <typename T> struct wrap_type_traits { typedef wrap_type_unknown_tag wrap_category; } ;
 
+template <std::size_t N> struct wrap_type_traits<char[N]> { typedef wrap_type_char_array wrap_category; } ;
+template <std::size_t N> struct wrap_type_traits<const char[N]> { typedef wrap_type_char_array wrap_category; } ;
 /**
  * Total specialization for primitive types
  */

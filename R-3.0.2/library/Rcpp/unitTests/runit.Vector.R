@@ -1,7 +1,7 @@
 #!/usr/bin/r -t
 #       hey emacs, please make this use  -*- tab-width: 4 -*-
 #
-# Copyright (C) 2010 - 2013  Dirk Eddelbuettel and Romain Francois
+# Copyright (C) 2010 - 2014  Dirk Eddelbuettel and Romain Francois
 #
 # This file is part of Rcpp.
 #
@@ -22,7 +22,7 @@
 
 if (.runThisTest) {
 
-    .setUp <- Rcpp:::unit_test_setup("Vector.cpp")
+    .setUp <- Rcpp:::unitTestSetup("Vector.cpp")
 
     test.RawVector <- function(){
         funx <- raw_
@@ -150,11 +150,6 @@ if (.runThisTest) {
         fun <- integer_names_indexing
         x <- c( "foo" = 1L, "bar" = 2L )
         checkEquals( fun( x ), 1L, msg = "IntegerVector names based indexing" )
-    }
-
-    test.IntegerVector.comma <- function(){
-        fun <- integer_comma
-        checkEquals( fun(), 0:3, msg = "IntegerVector comma initialization" )
     }
 
     test.IntegerVector.push.back <- function(){
@@ -520,11 +515,6 @@ if (.runThisTest) {
         checkEquals( fun(x), "foo", msg = "CharacterVector names based indexing" )
     }
 
-    test.CharacterVector.comma <- function(){
-        fun <- character_comma
-        checkEquals( fun(), c("foo","bar", "bling" ), msg = "CharacterVector comma operator" )
-    }
-
     test.CharacterVector.listOf <- function() {
         fun <- character_listOf
         checkEquals(fun(list(foo=c("tic","tac","toe"),
@@ -601,44 +591,6 @@ if (.runThisTest) {
         checkEquals( res, expected, msg = "List rep constructor" )
     }
 
-    if( Rcpp:::capabilities()[["initializer lists"]] ){
-
-        test.RawVector.initializer.list <- function(){
-            checkEquals( raw_initializer_list(), as.raw(2*0:3), msg = "RawVector( initializer list) " )
-        }
-
-        test.ComplexVector.initializer.list <- function(){
-            checkEquals( complex_initializer_list(), c( 0:1*(1+1i)), msg = "ComplexVector( initializer list) " )
-        }
-
-        test.IntegerVector.initializer.list <- function() {
-            checkEquals( integer_initializer_list(), 2*0:3, msg = "IntegerVector( initializer list) " )
-        }
-
-        test.NumericVector.initializer.list <- function(){
-            checkEquals( numeric_initlist(), as.numeric(2*0:3), msg = "NumericVector( initializer list) " )
-        }
-
-        test.List.initializer.list <- function(){
-            checkEquals( list_initializer_list(), as.list(0:2),
-                        msg = "List( initializer list) " )
-        }
-
-        test.List.insert <- function(){
-            d <- list( x = 1:10, y = letters[1:10] )
-            res <- List_insert( d )
-            checkEquals( res,
-                        list( 10L, x = 1:10, y = letters[1:10], foo = "bar" ),
-                        msg = "List.insert" )
-        }
-
-        test.CharacterVector.initializer.list <- function() {
-            checkEquals( character_initializer_list(), c("foo","bar"),
-                        msg = "CharacterVector( initializer list) " )
-        }
-
-    }
-
     test.std.vector.double <- function() {
         fun <- stdVectorDouble
         x <- seq(1.0, 5.0, by=1.0)
@@ -687,5 +639,32 @@ if (.runThisTest) {
         checkEquals(fun(x), 5, msg = "automatic conversion of stdVectorIntConstRef")
     }
 
+    test.character.vector.const.proxy <- function(){
+        res <- character_vector_const_proxy( "fooo" )
+        checkEquals( res, "fooo", msg = "CharacterVector const proxy. #32" )
+    }
+    
+    test.CharacterVector.test.const.proxy <- function(){
+        res <- CharacterVector_test_const_proxy( letters )
+        checkEquals( res, letters )
+    }
+  
+    test.sort <- function() {
+        num <- setNames( c(1, -1, 4, NA, 5, NaN), letters[1:5] )
+        checkIdentical( sort_numeric(num), sort(num, na.last=TRUE) )
+        int <- as.integer(num)
+        checkIdentical( sort_integer(int), sort(int, na.last=TRUE) )
+        char <- setNames( sample(letters, 5), LETTERS[1:5] )
+        checkIdentical( sort_character(char), sort(char, na.last=TRUE) )
+        lgcl <- as.logical(int)
+        checkIdentical( sort_logical(lgcl), sort(lgcl, na.last=TRUE) )
+    }
+    
+    test.List.assign.SEXP <- function() {
+        l <- list(1, 2, 3)
+        other <- list_sexp_assign(l)
+        checkIdentical(l, other)
+    }
+    
 }
 

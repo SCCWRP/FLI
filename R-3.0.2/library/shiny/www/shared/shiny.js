@@ -5,9 +5,24 @@
 
   var exports = window.Shiny = window.Shiny || {};
 
+  var isQt = false;
+  // For easy handling of Qt quirks using CSS
+  if (/\bQt\//.test(window.navigator.userAgent)) {
+    $(document.documentElement).addClass('qt');
+    isQt = true;
+  }
+
   $(document).on('submit', 'form:not([action])', function(e) {
     e.preventDefault();
   });
+  $(document).on('click', 'a.action-button', function(e) {
+    e.preventDefault();
+  });
+
+  // Escape jQuery selector metacharacters: !"#$%&'()*+,./:;<=>?@[\]^`{|}~
+  var $escape = exports.$escape = function(val) {
+    return val.replace(/([!"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~])/g, '\\$1');
+  };
 
   function randomId() {
     return Math.floor(0x100000000 + (Math.random() * 0xF00000000)).toString(16);
@@ -16,11 +31,17 @@
   // A wrapper for getComputedStyle that is compatible with older browsers.
   // This is significantly faster than jQuery's .css() function.
   function getStyle(el, styleProp) {
+    var x;
     if (el.currentStyle)
-      var x = el.currentStyle[styleProp];
-    else if (window.getComputedStyle)
-      var x = document.defaultView.getComputedStyle(el, null)
-                .getPropertyValue(styleProp);
+      x = el.currentStyle[styleProp];
+    else if (window.getComputedStyle) {
+      // getComputedStyle can return null when we're inside a hidden iframe on
+      // Firefox; don't attempt to retrieve style props in this case.
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=548397 
+      var style = document.defaultView.getComputedStyle(el, null);
+      if (style)
+        x = style.getPropertyValue(styleProp);
+    }
     return x;
   }
 
@@ -30,6 +51,15 @@
     while (str.length < digits)
       str = "0" + str;
     return str;
+  }
+
+  // Take a string with format "YYYY-MM-DD" and return a Date object.
+  // IE8 and QTWebKit don't support YYYY-MM-DD, but they support YYYY/MM/DD
+  function parseDate(dateString) {
+    var date = new Date(dateString);
+    if (isNaN(date))
+      date = new Date(dateString.replace(/-/g, "/"));
+    return date;
   }
 
   function slice(blob, start, end) {
@@ -42,7 +72,7 @@
     throw "Blob doesn't support slice";
   }
 
-  var _BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || 
+  var _BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder ||
       window.MozBlobBuilder || window.MSBlobBuilder;
 
   function makeBlob(parts) {
@@ -86,10 +116,11 @@
   }
 
   // Takes a string expression and returns a function that takes an argument.
-  // 
+  //
   // When the function is executed, it will evaluate that expression using
   // "with" on the argument value, and return the result.
   function scopeExprToFunc(expr) {
+    /*jshint evil: true */
     var func = new Function("with (this) {return (" + expr + ");}");
     return function(scope) {
       return func.call(scope);
@@ -130,6 +161,10 @@
       this.args = arguments;
 
       this.timerId = setTimeout(function() {
+        // IE8 doesn't reliably clear timeout, so this additional
+        // check is needed
+        if (self.timerId === null)
+          return;
         self.$clearTimer();
         self.$invoke();
       }, this.delayMs);
@@ -138,6 +173,9 @@
       this.$clearTimer();
       this.args = arguments;
       this.$invoke();
+    };
+    this.isPending = function() {
+      return this.timerId !== null;
     };
     this.$clearTimer = function() {
       if (this.timerId !== null) {
@@ -168,6 +206,10 @@
       if (this.timerId === null) {
         this.$invoke();
         this.timerId = setTimeout(function() {
+          // IE8 doesn't reliably clear timeout, so this additional
+          // check is needed
+          if (self.timerId === null)
+            return;
           self.$clearTimer();
           if (self.args)
             self.normalCall.apply(self, self.args);
@@ -214,6 +256,10 @@
         timerId = null;
       }
       timerId = setTimeout(function() {
+        // IE8 doesn't reliably clear timeout, so this additional
+        // check is needed
+        if (timerId === null)
+          return;
         timerId = null;
         func.apply(self, args);
       }, threshold);
@@ -241,7 +287,7 @@
         // Haven't seen a call recently. Execute now and
         // start a timer to buffer any subsequent calls.
         timerId = setTimeout(function() {
-          // When time expires, clear the timer; and if 
+          // When time expires, clear the timer; and if
           // there has been a call in the meantime, repeat.
           timerId = null;
           if (executionPending) {
@@ -262,36 +308,34 @@
     return throttled;
   }
 
-  // Immediately sends data to shinyapp
-  var InputSender = function(shinyapp) {
-    this.shinyapp = shinyapp;
-  };
-  (function() {
-    this.setInput = function(name, value) {
-      var data = {};
-      data[name] = value;
-      shinyapp.sendInput(data);
-    };
-  }).call(InputSender.prototype);
-
   // Schedules data to be sent to shinyapp at the next setTimeout(0).
   // Batches multiple input calls into one websocket message.
   var InputBatchSender = function(shinyapp) {
     this.shinyapp = shinyapp;
     this.timerId = null;
     this.pendingData = {};
+    this.reentrant = false;
+    this.lastChanceCallback = [];
   };
   (function() {
     this.setInput = function(name, value) {
       var self = this;
 
       this.pendingData[name] = value;
-      if (!this.timerId) {
+      if (!this.timerId && !this.reentrant) {
         this.timerId = setTimeout(function() {
-          self.timerId = null;
-          var currentData = self.pendingData;
-          self.pendingData = {};
-          self.shinyapp.sendInput(currentData);
+          self.reentrant = true;
+          try {
+            $.each(self.lastChanceCallback, function(i, callback) {
+              callback();
+            });
+            self.timerId = null;
+            var currentData = self.pendingData;
+            self.pendingData = {};
+            self.shinyapp.sendInput(currentData);
+          } finally {
+            self.reentrant = false;
+          }
         }, 0);
       }
     };
@@ -466,6 +510,15 @@
           protocol = 'wss:';
 
         var defaultPath = window.location.pathname;
+        // some older WebKit browsers return the pathname already decoded;
+        // if we find invalid URL characters in the path, encode them
+        if (!/^([$#!&-;=?-[\]_a-z~]|%[0-9a-fA-F]{2})+$/.test(defaultPath)) {
+          defaultPath = encodeURI(defaultPath);
+          // Bizarrely, QtWebKit requires us to encode these characters *twice*
+          if (isQt) {
+            defaultPath = encodeURI(defaultPath);
+          }
+        }
         if (!/\/$/.test(defaultPath))
           defaultPath += '/';
         defaultPath += 'websocket/';
@@ -512,12 +565,12 @@
     this.$notifyDisconnected = function() {
 
       // function to normalize hostnames
-      normalize = function(hostname) {
+      var normalize = function(hostname) {
         if (hostname == "127.0.0.1")
           return "localhost";
         else
           return hostname;
-      }
+      };
 
       // Send a 'disconnected' message to parent if we are on the same domin
       var parentUrl = (parent !== window) ? document.referrer : null;
@@ -525,17 +578,17 @@
         // parse the parent href
         var a = document.createElement('a');
         a.href = parentUrl;
-                
+
         // post the disconnected message if the hostnames are the same
         if (normalize(a.hostname) == normalize(window.location.hostname)) {
-          protocol = a.protocol.replace(':',''); // browser compatability
-          origin = protocol + '://' + a.hostname;
+          var protocol = a.protocol.replace(':',''); // browser compatability
+          var origin = protocol + '://' + a.hostname;
           if (a.port)
             origin = origin + ':' + a.port;
           parent.postMessage('disconnected', origin);
         }
       }
-    }
+    };
 
     // NB: Including blobs will cause IE to break!
     // TODO: Make blobs work with Internet Explorer
@@ -584,12 +637,12 @@
         // the length followed by the blob. The json payload is UTF-8 encoded
         // and used as the first blob.
 
-        function uint32_to_buf(val) {
+        var uint32_to_buf = function(val) {
           var buffer = new ArrayBuffer(4);
           var view = new DataView(buffer);
           view.setUint32(0, val, true); // little-endian
           return buffer;
-        }
+        };
 
         var payload = [];
         payload.push(uint32_to_buf(0x01020202)); // signature
@@ -789,24 +842,28 @@
 
     addMessageHandler('values', function(message) {
       $(document.documentElement).removeClass('shiny-busy');
-      for (var name in this.$bindings)
-        this.$bindings[name].showProgress(false);
+      for (var name in this.$bindings) {
+        if (this.$bindings.hasOwnProperty(name))
+          this.$bindings[name].showProgress(false);
+      }
 
       for (var key in message) {
-        this.receiveOutput(key, message[key]);
+        if (message.hasOwnProperty(key))
+          this.receiveOutput(key, message[key]);
       }
     });
 
     addMessageHandler('errors', function(message) {
       for (var key in message) {
-        this.receiveError(key, message[key]);
+        if (message.hasOwnProperty(key))
+          this.receiveError(key, message[key]);
       }
     });
 
     addMessageHandler('inputMessages', function(message) {
       // inputMessages should be an array
       for (var i = 0; i < message.length; i++) {
-        var $obj = $('.shiny-bound-input#' + message[i].id);
+        var $obj = $('.shiny-bound-input#' + $escape(message[i].id));
         var inputBinding = $obj.data('shiny-input-binding');
 
         // Dispatch the message to the appropriate input object
@@ -817,6 +874,7 @@
     });
 
     addMessageHandler('javascript', function(message) {
+      /*jshint evil: true */
       eval(message);
     });
 
@@ -861,7 +919,7 @@
       this._sendMessagesToHandlers(message, customMessageHandlers,
                                    customMessageHandlerOrder);
     });
-    
+
     addMessageHandler('config', function(message) {
       this.config = message;
     });
@@ -883,9 +941,9 @@
     // handle continuation frames
     this.aborted = false;
     this.completed = false;
-    
+
     // TODO: Register error/abort callbacks
-    
+
     this.$run();
   };
   (function() {
@@ -901,16 +959,16 @@
     this.onAbort = function() {
     };
     // End callbacks
-    
+
     // Aborts processing, unless it's already completed
     this.abort = function() {
       if (this.completed || this.aborted)
         return;
-      
+
       this.aborted = true;
       this.onAbort();
     };
-    
+
     // Returns a bound function that will call this.$run one time.
     this.$getRun = function() {
       var self = this;
@@ -922,34 +980,34 @@
         self.$run();
       };
     };
-    
+
     // This function will be called multiple times to advance the process.
     // It relies on the state of the object's fields to know what to do next.
     this.$run = function() {
-      
+
       var self = this;
 
       if (this.aborted || this.completed)
         return;
-      
+
       if (this.fileIndex < 0) {
         // Haven't started yet--begin
         this.fileIndex = 0;
         this.onBegin(this.files, this.$getRun());
         return;
       }
-      
+
       if (this.fileIndex === this.files.length) {
         // Just ended
         this.completed = true;
         this.onComplete();
         return;
       }
-      
+
       // If we got here, then we have a file to process, or we are
       // in the middle of processing a file, or have just finished
       // processing a file.
-      
+
       var file = this.files[this.fileIndex++];
       this.onFile(file, this.$getRun());
     };
@@ -1000,13 +1058,13 @@
   // =========================================================================
   // Output bindings
   // =========================================================================
-  
+
   var OutputBinding = exports.OutputBinding = function() {};
   (function() {
     // Returns a jQuery object or element array that contains the
     // descendants of scope that match this binding
     this.find = function(scope) { throw "Not implemented"; };
-  
+
     this.getId = function(el) {
       return el['data-input-id'] || el.id;
     };
@@ -1019,10 +1077,25 @@
       this.renderError(el, err);
     };
     this.renderError = function(el, err) {
-      $(el).addClass('shiny-output-error').text(err.message);
+      this.clearError(el);
+      if (err.message === '') {
+        // not really error, but we just need to wait (e.g. action buttons)
+        $(el).empty();
+        return;
+      }
+      var errClass = 'shiny-output-error';
+      if (err.type !== null) {
+        // use the classes of the error condition as CSS class names
+        errClass = errClass + ' ' + $.map(asArray(err.type), function(type) {
+          return errClass + '-' + type;
+        }).join(' ');
+      }
+      $(el).addClass(errClass).text(err.message);
     };
     this.clearError = function(el) {
-      $(el).removeClass('shiny-output-error');
+      $(el).attr('class', function(i, c) {
+        return c.replace(/(^|\s)shiny-output-error\S*/g, '');
+      });
     };
     this.showProgress = function(el, show) {
       var RECALC_CLASS = 'recalculating';
@@ -1056,23 +1129,24 @@
       // Load the image before emptying, to minimize flicker
       var img = null;
       var clickId, hoverId;
-      
+
       if (data) {
         clickId = $el.data('click-id');
         hoverId = $el.data('hover-id');
-        
+
         $el.data('coordmap', data.coordmap);
         delete data.coordmap;
-        
+
         img = document.createElement('img');
         // Copy items from data to img. This should include 'src'
         $.each(data, function(key, value) {
-          img[key] = value;
+          if (value !== null)
+            img[key] = value;
         });
 
         // Firefox doesn't have offsetX/Y, so we need to use an alternate
         // method of calculation for it
-        function mouseOffset(mouseEvent) {
+        var mouseOffset = function(mouseEvent) {
           if (typeof(mouseEvent.offsetX) !== 'undefined') {
             return {
               x: mouseEvent.offsetX,
@@ -1084,17 +1158,17 @@
             x: mouseEvent.pageX - offset.left,
             y: mouseEvent.pageY - offset.top
           };
-        }
-        
-        function createMouseHandler(inputId) {
+        };
+
+        var createMouseHandler = function(inputId) {
           return function(e) {
             if (e === null) {
-              Shiny.onInputChange(inputId, null);
+              exports.onInputChange(inputId, null);
               return;
             }
-            
+
             // TODO: Account for scrolling within the image??
-            
+
             var coordmap = $el.data('coordmap');
             function devToUsrX(deviceX) {
               var x = deviceX - coordmap.bounds.left;
@@ -1110,20 +1184,21 @@
             }
 
             var offset = mouseOffset(e);
-            
+
             var userX = devToUsrX(offset.x);
             if (coordmap.log.x)
               userX = Math.pow(10, userX);
-            
+
             var userY = devToUsrY(offset.y);
             if (coordmap.log.y)
               userY = Math.pow(10, userY);
-            
-            Shiny.onInputChange(inputId, {
-              x: userX, y: userY,
+
+            exports.onInputChange(inputId, {
+              x: userX,
+              y: userY,
               ".nonce": Math.random()
             });
-          }
+          };
         };
 
         if (!$el.data('hover-func')) {
@@ -1133,7 +1208,7 @@
                                     createMouseHandler(hoverId));
           $el.data('hover-func', hoverFunc);
         }
-        
+
         if (clickId)
           $(img).on('mousedown', createMouseHandler(clickId));
         if (hoverId) {
@@ -1166,13 +1241,164 @@
     },
     renderValue: function(el, data) {
       exports.unbindAll(el);
-      $(el).html(data);
+
+      var html;
+      var dependencies = [];
+      if (data === null) {
+        html = '';
+      } else if (typeof(data) === 'string') {
+        html = data;
+      } else if (typeof(data) === 'object') {
+        html = data.html;
+        dependencies = data.deps;
+      }
+
+      exports.renderHtml(html, el, dependencies);
       exports.initializeInputs(el);
       exports.bindAll(el);
     }
   });
   outputBindings.register(htmlOutputBinding, 'shiny.htmlOutput');
-  
+
+  // Render HTML in a DOM element, inserting singletons into head as needed
+  exports.renderHtml = function(html, el, dependencies) {
+    if (dependencies) {
+      $.each(dependencies, function(i, dep) {
+        renderDependency(dep);
+      });
+    }
+    return singletons.renderHtml(html, el);
+  };
+
+  function asArray(value) {
+    if (value === null)
+      return [];
+    if ($.isArray(value))
+      return value;
+    return [value];
+  }
+
+  var htmlDependencies = {};
+  function registerDependency(name, version) {
+    htmlDependencies[name] = version;
+  }
+
+  // Client-side dependency resolution and rendering
+  function renderDependency(dep) {
+    if (htmlDependencies.hasOwnProperty(dep.name))
+      return false;
+
+    registerDependency(dep.name, dep.version);
+
+    var href = dep.src.href;
+
+    var $head = $("head").first();
+
+    if (dep.meta) {
+      var metas = $.map(asArray(dep.meta), function(content, name) {
+        return $("<meta>").attr("name", name).attr("content", content);
+      });
+      $head.append(metas);
+    }
+
+    if (dep.stylesheet) {
+      var stylesheets = $.map(asArray(dep.stylesheet), function(stylesheet) {
+        return $("<link rel='stylesheet' type='text/css'>")
+          .attr("href", href + "/" + stylesheet);
+      });
+      $head.append(stylesheets);
+    }
+
+    if (dep.script) {
+      var scripts = $.map(asArray(dep.script), function(scriptName) {
+        return $("<script>").attr("src", href + "/" + scriptName);
+      });
+      $head.append(scripts);
+    }
+
+    if (dep.head) {
+      var $newHead = $("<head></head>");
+      $newHead.html(dep.head);
+      $head.append($newHead.children());
+    }
+    return true;
+  }
+
+  var singletons = {
+    knownSingletons: {},
+    renderHtml: function(html, el) {
+      var processed = this._processHtml(html);
+      this._addToHead(processed.head);
+      this.register(processed.singletons);
+      $(el).html(processed.html);
+      return processed;
+    },
+    // Take an object where keys are names of singletons, and merges it into
+    // knownSingletons
+    register: function(s) {
+      $.extend(this.knownSingletons, s);
+    },
+    // Takes a string or array of strings and adds them to knownSingletons
+    registerNames: function(s) {
+      if (typeof s === 'string') {
+        this.knownSingletons[s] = true;
+      } else if (s instanceof Array) {
+        for (var i = 0; i < s.length; i++) {
+          this.knownSingletons[s[i]] = true;
+        }
+      }
+    },
+    // Inserts new content into document head
+    _addToHead: function(head) {
+      if (head.length > 0) {
+        var tempDiv = $("<div>" + head + "</div>")[0];
+        var $head = $('head');
+        while (tempDiv.hasChildNodes()) {
+          $head.append(tempDiv.firstChild);
+        }
+      }
+    },
+    // Reads HTML and returns an object with info about singletons
+    _processHtml: function(val) {
+      var self = this;
+      var newSingletons = {};
+      var newVal;
+
+      var findNewPayload = function(match, p1, sig, payload) {
+        if (self.knownSingletons[sig] || newSingletons[sig])
+          return "";
+        newSingletons[sig] = true;
+        return payload;
+      };
+      while (true) {
+        newVal = val.replace(self._reSingleton, findNewPayload);
+        if (val.length === newVal.length)
+          break;
+        val = newVal;
+      }
+
+      var heads = [];
+      var headAddPayload = function(match, payload) {
+        heads.push(payload);
+        return "";
+      };
+      while (true) {
+        newVal = val.replace(self._reHead, headAddPayload);
+        if (val.length === newVal.length)
+          break;
+        val = newVal;
+      }
+
+      return {
+        html: val,
+        head: heads.join("\n"),
+        singletons: newSingletons
+      };
+    },
+    _reSingleton: /<!--(SHINY.SINGLETON\[([\w]+)\])-->([\s\S]*?)<!--\/\1-->/,
+    _reHead: /<head(?:\s[^>]*)?>([\s\S]*?)<\/head>/
+  };
+
   var downloadLinkOutputBinding = new OutputBinding();
   $.extend(downloadLinkOutputBinding, {
     find: function(scope) {
@@ -1196,18 +1422,30 @@
     renderValue: function(el, data) {
       var $el = $(el).empty();
       if (!data || !data.colnames) return;
+
       var colnames = $.makeArray(data.colnames);
-      var header = colnames.map(function(x) {
+      var header = $.map(colnames, function(x) {
         return '<th>' + x + '</th>';
       }).join('');
       header = '<thead><tr>' + header + '</tr></thead>';
-      var footer = colnames.map(function(x) {
-        return '<th><input type="text" placeholder="' + x + '" /></th>';
-      }).join('');
-      footer = '<tfoot>' + footer + '</tfoot>';
+      var footer = '';
+      if (data.options === null || data.options.bFilter !== false) {
+        footer = $.map(colnames, function(x) {
+          return '<th><input type="text" placeholder="' + x + '" /></th>';
+        }).join('');
+        footer = '<tfoot>' + footer + '</tfoot>';
+      }
       var content = '<table class="table table-striped table-hover">' +
                     header + footer + '</table>';
       $el.append(content);
+
+      // options that should be eval()ed
+      if (data.evalOptions)
+        $.each(data.evalOptions, function(i, x) {
+          /*jshint evil: true */
+          data.options[x] = eval('(' + data.options[x] + ')');
+        });
+
       var oTable = $(el).children("table").dataTable($.extend({
         "bProcessing": true,
         "bServerSide": true,
@@ -1216,15 +1454,28 @@
         "iDisplayLength": 25,
         "sAjaxSource": data.action
       }, data.options));
+      // the table object may need post-processing
+      if (typeof data.callback === 'string') {
+        /*jshint evil: true */
+        var callback = eval('(' + data.callback + ')');
+        if (typeof callback === 'function') callback(oTable);
+      }
+
       // use debouncing for searching boxes
       $el.find('label input').first().unbind('keyup')
            .keyup(debounce(data.searchDelay, function() {
               oTable.fnFilter(this.value);
             }));
       var searchInputs = $el.find("tfoot input");
-      searchInputs.keyup(debounce(data.searchDelay, function() {
-        oTable.fnFilter(this.value, searchInputs.index(this));
-      }));
+      if (searchInputs.length > 0) {
+        $.each(oTable.fnSettings().aoColumns, function(i, x) {
+          // hide the text box if not searchable
+          if (!x.bSearchable) searchInputs.eq(i).hide();
+        });
+        searchInputs.keyup(debounce(data.searchDelay, function() {
+          oTable.fnFilter(this.value, searchInputs.index(this));
+        }));
+      }
       // FIXME: ugly scrollbars in tab panels b/c Bootstrap uses 'visible: auto'
       $el.parents('.tab-content').css('overflow', 'visible');
     }
@@ -1237,17 +1488,17 @@
 
   var InputBinding = exports.InputBinding = function() {
   };
-  
+
   (function() {
-  
+
     // Returns a jQuery object or element array that contains the
     // descendants of scope that match this binding
     this.find = function(scope) { throw "Not implemented"; };
-  
+
     this.getId = function(el) {
       return el['data-input-id'] || el.id;
     };
-  
+
     // Gives the input a type in case the server needs to know it
     // to deserialize the JSON correctly
     this.getType = function() { return false; };
@@ -1262,7 +1513,7 @@
     // trigger a change event.
     this.receiveMessage = function(el, data) { throw "Not implemented"; };
     this.getState = function(el, data) { throw "Not implemented"; };
-    
+
     this.getRatePolicy = function() { return null; };
 
     // Some input objects need initialization before being bound. This is
@@ -1276,9 +1527,9 @@
     this.dispose = function(el) { };
 
   }).call(InputBinding.prototype);
-  
-  
-  
+
+
+
   // Text input
   var textInputBinding = new InputBinding();
   $.extend(textInputBinding, {
@@ -1310,13 +1561,13 @@
         this.setValue(el, data.value);
 
       if (data.hasOwnProperty('label'))
-        $(el).parent().find('label[for=' + el.id + ']').text(data.label);
+        $(el).parent().find('label[for="' + $escape(el.id) + '"]').text(data.label);
 
       $(el).trigger('change');
     },
     getState: function(el) {
       return {
-        label: $(el).parent().find('label[for=' + el.id + ']').text(),
+        label: $(el).parent().find('label[for="' + $escape(el.id) + '"]').text(),
         value: el.value
       };
     },
@@ -1338,7 +1589,7 @@
   });
   inputBindings.register(textareaInputBinding, 'shiny.textareaInput');
 
-  
+
   var numberInputBinding = {};
   $.extend(numberInputBinding, textInputBinding, {
     find: function(scope) {
@@ -1357,7 +1608,7 @@
       el.value = value;
     },
     getType: function(el) {
-      return "number";
+      return "shiny.number";
     },
     receiveMessage: function(el, data) {
       if (data.hasOwnProperty('value'))  el.value = data.value;
@@ -1366,12 +1617,12 @@
       if (data.hasOwnProperty('step'))   el.step  = data.step;
 
       if (data.hasOwnProperty('label'))
-        $(el).parent().find('label[for=' + el.id + ']').text(data.label);
+        $(el).parent().find('label[for="' + $escape(el.id) + '"]').text(data.label);
 
       $(el).trigger('change');
     },
     getState: function(el) {
-      return { label: $(el).parent().find('label[for=' + el.id + ']').text(),
+      return { label: $(el).parent().find('label[for="' + $escape(el.id) + '"]').text(),
                value: this.getValue(el),
                min:   Number(el.min),
                max:   Number(el.max),
@@ -1449,7 +1700,7 @@
         this.setValue(el, data.value);
 
       if (data.hasOwnProperty('label'))
-        $(el).parent().find('label[for=' + el.id + ']').text(data.label);
+        $(el).parent().find('label[for="' + $escape(el.id) + '"]').text(data.label);
 
       // jslider doesn't support setting other properties
 
@@ -1465,7 +1716,7 @@
       var $el = $(el);
       var settings = $el.slider().settings;
 
-      return { label: $el.parent().find('label[for=' + el.id + ']').text(),
+      return { label: $el.parent().find('label[for="' + $escape(el.id) + '"]').text(),
                value:  this.getValue(el),
                min:    Number(settings.from),
                max:    Number(settings.to),
@@ -1476,11 +1727,13 @@
              };
     },
     initialize: function(el) {
-      $(el).slider();
+      var $el = $(el);
+      $el.slider();
+      $el.next('span.jslider').css('width', $el.data('width'));
     }
   });
   inputBindings.register(sliderInputBinding, 'shiny.sliderInput');
-  
+
 
   var dateInputBinding = new InputBinding();
   $.extend(dateInputBinding, {
@@ -1488,7 +1741,7 @@
       return $(scope).find('.shiny-date-input');
     },
     getType: function(el) {
-      return "date";
+      return "shiny.date";
     },
     // Return the date in an unambiguous format, yyyy-mm-dd (as opposed to a
     // format like mm/dd/yyyy)
@@ -1524,7 +1777,7 @@
       else if (startview === 0)  startview = 'month';
 
       return {
-        label:       $el.find('label[for=' + el.id + ']').text(),
+        label:       $el.find('label[for="' + $escape(el.id) + '"]').text(),
         value:       this.getValue(el),
         valueString: $input.val(),
         min:         min,
@@ -1542,7 +1795,7 @@
         this.setValue(el, data.value);
 
       if (data.hasOwnProperty('label'))
-        $(el).find('label[for=' + el.id + ']').text(data.label);
+        $(el).find('label[for="' + $escape(el.id) + '"]').text(data.label);
 
       if (data.hasOwnProperty('min'))
         this._setMin($input[0], data.min);
@@ -1648,7 +1901,7 @@
 
       // Get Date object - this will be at 12AM in UTC, but may print
       // differently at the Javascript console.
-      var d = new Date(date);
+      var d = parseDate(date);
 
       // If invalid date, return null
       if (isNaN(d))
@@ -1727,7 +1980,7 @@
       else if (startview === 0)  startview = 'month';
 
       return {
-        label:       $el.find('label[for=' + el.id + ']').text(),
+        label:       $el.find('label[for="' + $escape(el.id) + '"]').text(),
         value:       this.getValue(el),
         valueString: [ $startinput.val(), $endinput.val() ],
         min:         min,
@@ -1748,7 +2001,7 @@
         this.setValue(el, data.value);
 
       if (data.hasOwnProperty('label'))
-        $el.find('label[for=' + el.id + ']').text(data.label);
+        $el.find('label[for="' + $escape(el.id) + '"]').text(data.label);
 
       if (data.hasOwnProperty('min')) {
         this._setMin($startinput[0], data.min);
@@ -1819,52 +2072,79 @@
       return $(el).val();
     },
     setValue: function(el, value) {
-      $(el).val(value);
+      var selectize = this._selectize(el);
+      if (selectize !== undefined) {
+        selectize.setValue(value);
+      } else $(el).val(value);
     },
     getState: function(el) {
       // Store options in an array of objects, each with with value and label
       var options = new Array(el.length);
       for (var i = 0; i < el.length; i++) {
         options[i] = { value:    el[i].value,
-                       label:    el[i].label,
-                       selected: el[i].selected };
+                       label:    el[i].label };
       }
 
       return {
-        label: $(el).parent().find('label[for=' + el.id + ']').text(),
-        value:    this.getValue(el),               
+        label: $(el).parent().find('label[for="' + $escape(el.id) + '"]').text(),
+        value:    this.getValue(el),
         options:  options
       };
     },
     receiveMessage: function(el, data) {
-      var $el = $(el);
+      var $el = $(el), selectize;
 
       // This will replace all the options
       if (data.hasOwnProperty('options')) {
+        selectize = this._selectize(el);
+        // Must destroy selectize before appending new options, otherwise
+        // selectize will restore the original select
+        if (selectize) selectize.destroy();
         // Clear existing options and add each new one
-        $el.empty();
-        for (var i = 0; i < data.options.length; i++) {
-          var in_opt = data.options[i];
+        $el.empty().append(data.options);
+        this._selectize(el);
+      }
 
-          var $newopt = $('<option/>', {
-            value: in_opt.value,
-            text: in_opt.label
+      // re-initialize selectize
+      if (data.hasOwnProperty('config')) {
+        $el.parent()
+           .find('script[data-for="' + $escape(el.id) + '"]')
+           .replaceWith(data.config);
+        this._selectize(el, true);
+      }
+
+      // use server-side processing for selectize
+      if (data.hasOwnProperty('url')) {
+        selectize = this._selectize(el);
+        selectize.clearOptions();
+        selectize.settings.load = function(query, callback) {
+          if (!query.length) return callback();
+          $.ajax({
+            url: data.url,
+            data: {
+              query: query,
+              field: JSON.stringify(selectize.settings.searchField),
+              conju: selectize.settings.searchConjunction,
+              maxop: selectize.settings.maxOptions
+            },
+            type: 'GET',
+            error: function() {
+              callback();
+            },
+            success: function(res) {
+              callback(res);
+            }
           });
-
-          // Add selected attribute if present
-          if (in_opt.hasOwnProperty('selected')) {
-            $newopt.prop('selected', in_opt.selected);
-          }
-
-          $el.append($newopt);
-        }
+        };
+        if (data.hasOwnProperty('selected'))
+          selectize.addOption(data.selected);
       }
 
       if (data.hasOwnProperty('value'))
         this.setValue(el, data.value);
 
       if (data.hasOwnProperty('label'))
-        $(el).parent().find('label[for=' + el.id + ']').text(data.label);
+        $(el).parent().find('label[for="' + $escape(el.id) + '"]').text(data.label);
 
       $(el).trigger('change');
     },
@@ -1875,6 +2155,51 @@
     },
     unsubscribe: function(el) {
       $(el).off('.selectInputBinding');
+    },
+    initialize: function(el) {
+      this._selectize(el);
+    },
+    _selectize: function(el, update) {
+      if (!$.fn.selectize) return;
+      var $el = $(el);
+      var config = $el.parent().find('script[data-for="' + $escape(el.id) + '"]');
+      if (config.length === 0) return;
+      var options = $.extend({
+        labelField: 'label',
+        valueField: 'value',
+        searchField: ['label']
+      }, JSON.parse(config.html()));
+      // selectize created from selectInput()
+      if (config.data('nonempty') !== undefined) {
+        options = $.extend(options, {
+          onItemRemove: function(value) {
+            if (this.getValue() === "")
+              $("select#" + $escape(el.id)).empty().append($("<option/>", {
+                "value": value,
+                "selected": true
+              })).trigger("change");
+          },
+          onDropdownClose: function($dropdown) {
+            if (this.getValue() === "")
+              this.setValue($("select#" + $escape(el.id)).val());
+          }
+        });
+      }
+      // options that should be eval()ed
+      if (config.data('eval') instanceof Array)
+        $.each(config.data('eval'), function(i, x) {
+          /*jshint evil: true*/
+          options[x] = eval('(' + options[x] + ')');
+        });
+      var control = $el.selectize(options)[0].selectize;
+      // .selectize() does not really update settings; must destroy and rebuild
+      if (update) {
+        var settings = $.extend(control.settings, options);
+        control.destroy();
+        control = $el.selectize(settings)[0].selectize;
+      }
+      $el.next('div.selectize-control').css('width', config.data('width'));
+      return control;
     }
   });
   inputBindings.register(selectInputBinding, 'shiny.selectInput');
@@ -1888,24 +2213,23 @@
     },
     getValue: function(el) {
       // Select the radio objects that have name equal to the grouping div's id
-      return $('input:radio[name=' + el.id + ']:checked').val();
+      return $('input:radio[name="' + $escape(el.id) + '"]:checked').val();
     },
     setValue: function(el, value) {
-      $('input:radio[name=' + el.id + '][value=' + value + ']').prop('checked', true);
+      $('input:radio[name="' + $escape(el.id) + '"][value="' + $escape(value) + '"]').prop('checked', true);
     },
     getState: function(el) {
-      var $objs = $('input:radio[name=' + el.id + ']');
+      var $objs = $('input:radio[name="' + $escape(el.id) + '"]');
 
       // Store options in an array of objects, each with with value and label
       var options = new Array($objs.length);
       for (var i = 0; i < options.length; i++) {
         options[i] = { value:   $objs[i].value,
-                       label:   this._getLabel($objs[i]),
-                       checked: $objs[i].checked };
+                       label:   this._getLabel($objs[i]) };
       }
 
       return {
-        label:    $(el).parent().find('label[for=' + el.id + ']').text(),
+        label:    $(el).parent().find('label[for="' + $escape(el.id) + '"]').text(),
         value:    this.getValue(el),
         options:  options
       };
@@ -1917,34 +2241,14 @@
       if (data.hasOwnProperty('options')) {
         // Clear existing options and add each new one
         $el.find('label.radio').remove();
-        for (var i = 0; i < data.options.length; i++) {
-          var in_opt = data.options[i];
-
-          var $newopt = $('<label class="radio">');
-          var $radio = $('<input/>', {
-            type:  "radio",
-            name:  el.id,
-            id:    el.id + (i+1).toString(),
-            value: in_opt.value
-          });
-
-          // Add checked attribute if present
-          if (in_opt.hasOwnProperty('checked')) {
-            $radio.prop('checked', in_opt.checked);
-          }
-
-          $newopt.append($radio);
-          $newopt.append('<span>' + in_opt.label + '</span>');
-
-          $el.append($newopt);
-        }
+        $el.append(data.options);
       }
 
       if (data.hasOwnProperty('value'))
         this.setValue(el, data.value);
 
       if (data.hasOwnProperty('label'))
-        $(el).parent().find('label[for=' + el.id + ']').text(data.label);
+        $(el).parent().find('label[for="' + $escape(el.id) + '"]').text(data.label);
 
       $(el).trigger('change');
     },
@@ -1960,7 +2264,7 @@
     // that wrap the input as well as labels associated with 'for' attribute.
     _getLabel: function(obj) {
       // If <input id='myid'><label for='myid'>label text</label>
-      var $label_for = $('label[for=' + obj.id + ']');
+      var $label_for = $('label[for="' + $escape(obj.id) + '"]');
       if ($label_for.length > 0) {
         return $.trim($label_for.text());
       }
@@ -1976,7 +2280,7 @@
     // that wrap the input as well as labels associated with 'for' attribute.
     _setLabel: function(obj, value) {
       // If <input id='myid'><label for='myid'>label text</label>
-      var $label_for = $('label[for=' + obj.id + ']');
+      var $label_for = $('label[for="' + $escape(obj.id) + '"]');
       if ($label_for.length > 0) {
         $label_for.text(value);
       }
@@ -2001,7 +2305,7 @@
     },
     getValue: function(el) {
       // Select the checkbox objects that have name equal to the grouping div's id
-      var $objs = $('input:checkbox[name=' + el.id + ']:checked');
+      var $objs = $('input:checkbox[name="' + $escape(el.id) + '"]:checked');
       var values = new Array($objs.length);
       for (var i = 0; i < $objs.length; i ++) {
         values[i] = $objs[i].value;
@@ -2010,33 +2314,32 @@
     },
     setValue: function(el, value) {
       // Clear all checkboxes
-      $('input:checkbox[name=' + el.id + ']').prop('checked', false);
+      $('input:checkbox[name="' + $escape(el.id) + '"]').prop('checked', false);
 
       // Accept array
       if (value instanceof Array) {
         for (var i = 0; i < value.length; i++) {
-          $('input:checkbox[name=' + el.id + '][value=' + value[i] + ']')
+          $('input:checkbox[name="' + $escape(el.id) + '"][value="' + $escape(value[i]) + '"]')
             .prop('checked', true);
         }
       // Else assume it's a single value
       } else {
-        $('input:checkbox[name=' + el.id + '][value=' + value + ']')
+        $('input:checkbox[name="' + $escape(el.id) + '"][value="' + $escape(value) + '"]')
           .prop('checked', true);
       }
 
     },
     getState: function(el) {
-      var $objs = $('input:checkbox[name=' + el.id + ']');
+      var $objs = $('input:checkbox[name="' + $escape(el.id) + '"]');
 
       // Store options in an array of objects, each with with value and label
       var options = new Array($objs.length);
       for (var i = 0; i < options.length; i++) {
         options[i] = { value:   $objs[i].value,
-                       label:   this._getLabel($objs[i]),
-                       checked: $objs[i].checked };
+                       label:   this._getLabel($objs[i]) };
       }
 
-      return { label:    $(el).find('label[for=' + el.id + ']').text(),
+      return { label:    $(el).find('label[for="' + $escape(el.id) + '"]').text(),
                value:    this.getValue(el),
                options:  options
              };
@@ -2048,34 +2351,14 @@
       if (data.hasOwnProperty('options')) {
         // Clear existing options and add each new one
         $el.find('label.checkbox').remove();
-        for (var i = 0; i < data.options.length; i++) {
-          var in_opt = data.options[i];
-
-          var $newopt = $('<label class="checkbox">');
-          var $checkbox = $('<input/>', {
-            type:  "checkbox",
-            name:  el.id,
-            id:    el.id + (i+1).toString(),
-            value: in_opt.value
-          });
-
-          // Add checked attribute if present
-          if (in_opt.hasOwnProperty('checked')) {
-            $checkbox.prop('checked', in_opt.checked);
-          }
-
-          $newopt.append($checkbox);
-          $newopt.append('<span>' + in_opt.label + '</span>');
-
-          $el.append($newopt);
-        }
+        $el.append(data.options);
       }
 
       if (data.hasOwnProperty('value'))
         this.setValue(el, data.value);
 
       if (data.hasOwnProperty('label'))
-        $el.find('label[for=' + el.id + ']').text(data.label);
+        $el.find('label[for="' + $escape(el.id) + '"]').text(data.label);
 
       $(el).trigger('change');
     },
@@ -2091,7 +2374,7 @@
     // that wrap the input as well as labels associated with 'for' attribute.
     _getLabel: function(obj) {
       // If <input id='myid'><label for='myid'>label text</label>
-      var $label_for = $('label[for=' + obj.id + ']');
+      var $label_for = $('label[for="' + $escape(obj.id) + '"]');
       if ($label_for.length > 0) {
         return $.trim($label_for.text());
       }
@@ -2107,7 +2390,7 @@
     // that wrap the input as well as labels associated with 'for' attribute.
     _setLabel: function(obj, value) {
       // If <input id='myid'><label for='myid'>label text</label>
-      var $label_for = $('label[for=' + obj.id + ']');
+      var $label_for = $('label[for="' + $escape(obj.id) + '"]');
       if ($label_for.length > 0) {
         $label_for.text(value);
       }
@@ -2133,6 +2416,10 @@
       return $(el).data('val') || 0;
     },
     setValue: function(el, value) {
+      $(el).data('val', value);
+    },
+    getType: function(el) {
+      return 'shiny.action';
     },
     subscribe: function(el, callback) {
       $(el).on("click.actionButtonInputBinding", function(e) {
@@ -2158,10 +2445,10 @@
   var bootstrapTabInputBinding = new InputBinding();
   $.extend(bootstrapTabInputBinding, {
     find: function(scope) {
-      return $(scope).find('ul.nav.nav-tabs');
+      return $(scope).find('ul.nav.shiny-tab-input');
     },
     getValue: function(el) {
-      var anchor = $(el).children('li.active').children('a');
+      var anchor = $(el).find('li:not(.dropdown).active').children('a');
       if (anchor.length === 1)
         return this._getTabName(anchor);
 
@@ -2169,7 +2456,7 @@
     },
     setValue: function(el, value) {
       var self = this;
-      var anchors = $(el).children('li').children('a');
+      var anchors = $(el).find('li:not(.dropdown)').children('a');
       anchors.each(function() {
         if (self._getTabName($(this)) === value) {
           $(this).tab('show');
@@ -2277,7 +2564,7 @@
     this.onComplete = function() {
       var self = this;
       this.makeRequest(
-        'uploadEnd', [this.jobId, this.id], 
+        'uploadEnd', [this.jobId, this.id],
         function(response) {
           self.$setActive(false);
           self.onProgress(null, 1);
@@ -2300,13 +2587,13 @@
       this.$label().text(file ? file.name : '');
     };
     this.$container = function() {
-      return $('#' + this.id + '_progress.shiny-file-input-progress');
+      return $('#' + $escape(this.id) + '_progress.shiny-file-input-progress');
     };
     this.$bar = function() {
-      return $('#' + this.id + '_progress.shiny-file-input-progress .bar');
+      return $('#' + $escape(this.id) + '_progress.shiny-file-input-progress .bar');
     };
     this.$label = function() {
-      return $('#' + this.id + '_progress.shiny-file-input-progress label');
+      return $('#' + $escape(this.id) + '_progress.shiny-file-input-progress label');
     };
     this.$setVisible = function(visible) {
       this.$container().css('visibility', visible ? 'visible' : 'hidden');
@@ -2364,7 +2651,7 @@
   });
   inputBindings.register(fileInputBinding, 'shiny.fileInputBinding');
 
-  
+
   var OutputBindingAdapter = function(el, binding) {
     this.el = el;
     this.binding = binding;
@@ -2397,7 +2684,7 @@
       scope = $(scope);
 
       var bindings = outputBindings.getBindings();
-      
+
       for (var i = 0; i < bindings.length; i++) {
         var binding = bindings[i].binding;
         var matches = binding.find(scope) || [];
@@ -2445,7 +2732,8 @@
         return $(el).val();
     }
 
-    var inputsNoResend = new InputNoResendDecorator(new InputBatchSender(shinyapp));
+    var inputBatchSender = new InputBatchSender(shinyapp);
+    var inputsNoResend = new InputNoResendDecorator(inputBatchSender);
     var inputsRate = new InputRateDecorator(inputsNoResend);
     var inputsDefer = new InputDeferDecorator(inputsNoResend);
 
@@ -2465,7 +2753,7 @@
     };
 
     var boundInputs = {};
-    
+
     function valueChangeCallback(binding, el, allowDeferred) {
       var id = binding.getId(el);
       if (id) {
@@ -2476,16 +2764,16 @@
         inputs.setInput(id, value, !allowDeferred);
       }
     }
-    
+
     function bindInputs(scope) {
 
       if (scope === undefined)
         scope = document;
-      
+
       var bindings = inputBindings.getBindings();
-      
+
       var currentValues = {};
-    
+
       for (var i = 0; i < bindings.length; i++) {
         var binding = bindings[i].binding;
         var matches = binding.find(scope) || [];
@@ -2496,11 +2784,12 @@
           // Check if ID is falsy, or if already bound
           if (!id || boundInputs[id])
             continue;
-    
+
           var type = binding.getType(el);
           var effectiveId = type ? id + ":" + type : id;
           currentValues[effectiveId] = binding.getValue(el);
 
+          /*jshint loopfunc:true*/
           var thisCallback = (function() {
             var thisBinding = binding;
             var thisEl = el;
@@ -2512,14 +2801,14 @@
           binding.subscribe(el, thisCallback);
           $(el).data('shiny-input-binding', binding);
           $(el).addClass('shiny-bound-input');
-          var ratePolicy = binding.getRatePolicy();
+          var ratePolicy = binding.getRatePolicy(el);
           if (ratePolicy !== null) {
             inputsRate.setRatePolicy(
               effectiveId,
               ratePolicy.policy,
               ratePolicy.delay);
           }
-    
+
           boundInputs[id] = {
             binding: binding,
             node: el
@@ -2530,7 +2819,7 @@
           }
         }
       }
-    
+
       return currentValues;
     }
 
@@ -2556,9 +2845,9 @@
         return null;
 
       var els = $(
-        'input:checked' + 
-        '[type="' + input.type + '"]' + 
-        '[name="' + input.name + '"]');
+        'input:checked' +
+        '[type="' + $escape(input.type) + '"]' +
+        '[name="' + $escape(input.name) + '"]');
       var values = els.map(function() { return this.value; }).get();
       if (exclusiveValue) {
         if (values.length > 0)
@@ -2733,7 +3022,7 @@
       }
     });
     // Send update when hidden state changes
-    function sendOutputHiddenState() {
+    function doSendOutputHiddenState() {
       var visibleOutputs = {};
       $('.shiny-bound-output').each(function() {
         delete lastKnownVisibleOutputs[this.id];
@@ -2753,6 +3042,20 @@
       // Update the visible outputs for next time
       lastKnownVisibleOutputs = visibleOutputs;
     }
+    // sendOutputHiddenState gets called each time DOM elements are shown or
+    // hidden. This can be in the hundreds or thousands of times at startup.
+    // We'll debounce it, so that we do the actual work once per tick.
+    var sendOutputHiddenStateDebouncer = new Debouncer(null, doSendOutputHiddenState, 0);
+    function sendOutputHiddenState() {
+      sendOutputHiddenStateDebouncer.normalCall();
+    }
+    // We need to make sure doSendOutputHiddenState actually gets called before
+    // the inputBatchSender sends data to the server. The lastChanceCallback
+    // here does that - if the debouncer has a pending call, flush it.
+    inputBatchSender.lastChanceCallback.push(function() {
+      if (sendOutputHiddenStateDebouncer.isPending())
+        sendOutputHiddenStateDebouncer.immediateCall();
+    });
 
     // The size of each image may change either because the browser window was
     // resized, or because a tab was shown/hidden (hidden elements report size
@@ -2781,6 +3084,20 @@
     // used if this capability is important.
     initialValues['.clientdata_url_hash_initial'] = window.location.hash;
 
+    // The server needs to know what singletons were rendered as part of
+    // the page loading
+    var singletonText = initialValues['.clientdata_singletons'] =
+        $('script[type="application/shiny-singletons"]').text();
+    singletons.registerNames(singletonText.split(/,/));
+
+    var dependencyText = $('script[type="application/html-dependencies"]').text();
+    $.each(dependencyText.split(/;/), function(i, depStr) {
+      var match = /\s*^(.+)\[(.+)\]\s*$/.exec(depStr);
+      if (match) {
+        registerDependency(match[1], match[2]);
+      }
+    });
+
     // We've collected all the initial values--start the server process!
     inputsNoResend.reset(initialValues);
     shinyapp.connect(initialValues);
@@ -2795,7 +3112,7 @@
   $(document).on('click', '.slider-animate-button', function(evt) {
     evt.preventDefault();
     var self = $(this);
-    var target = $('#' + self.attr('data-target-id'));
+    var target = $('#' + $escape(self.attr('data-target-id')));
     var slider = target.slider();
     var startLabel = 'Play';
     var stopLabel = 'Pause';
@@ -2838,11 +3155,11 @@
       target.removeData('animating');
     }
   });
-  
+
   $(document).on('keydown', function(e) {
     if (e.which !== 114 || (!e.ctrlKey && !e.metaKey) || (e.shiftKey || e.altKey))
       return;
-    var url = 'reactlog?w=' + Shiny.shinyapp.config.workerId;
+    var url = 'reactlog?w=' + exports.shinyapp.config.workerId;
     window.open(url);
     e.preventDefault();
   });

@@ -1,3 +1,34 @@
+httpuv 1.3.0
+------------------------------------------------------------------------
+
+* Add experimental support for running httpuv servers in the background
+  (see ?startDaemonizedServer and ?stopDaemonizedServer). Many thanks
+  to Héctor Corrada Bravo for the contribution!
+
+
+httpuv 1.2.3
+------------------------------------------------------------------------
+
+* Require Rcpp 0.11.0. The absence of this requirement made it too easy
+  for Windows and Mac users with Rcpp 0.10 already installed to grab
+  httpuv 1.2.2 binaries from CRAN, which are built against Rcpp 0.11,
+  causing bad crashes due to Rcpp's linkage changes.
+
+
+httpuv 1.2.2
+------------------------------------------------------------------------
+
+* Export base64 encoding function `rawToBase64`.
+
+* Compatibility work for Rcpp 0.11.0.
+
+
+httpuv 1.2.1
+------------------------------------------------------------------------
+
+* Solaris 10 compatibility fixes (courtesy of Dr. Brian Ripley).
+
+
 httpuv 1.2.0
 ------------------------------------------------------------------------
 

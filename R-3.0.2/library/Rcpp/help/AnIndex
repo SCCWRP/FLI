@@ -40,6 +40,7 @@ prompt,Module-method	Module-class
 Rcpp	Rcpp-package
 Rcpp-internal	Rcpp-internal
 Rcpp.package.skeleton	Rcpp.package.skeleton
+Rcpp.plugin.maker	Rcpp.plugin.maker
 RcppClass-class	setRcppClass
 RcppLdFlags	RcppLdFlags
 RcppUnitTests	RcppUnitTests

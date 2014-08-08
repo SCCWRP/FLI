@@ -29,6 +29,15 @@
 \newcommand{\ith}{\textsl{i}-\textsuperscript{th}}
 \newcommand{\code}[1]{\texttt{#1}}
 
+
+%% This corresponds to setting boxes=TRUE for highlight
+\newsavebox{\hlbox}
+\definecolor{hlBg}{rgb}{0.949019607843137,0.949019607843137,0.949019607843137}
+\definecolor{hlBd}{rgb}{0,0,0}
+\renewenvironment{Hchunk}{\vspace{0.5em}\noindent\begin{lrbox}{\hlbox}\begin{minipage}[b]{.9\textwidth}}%
+    {\end{minipage}\end{lrbox}\fcolorbox{hlBd}{hlBg}{\usebox{\hlbox}}\vspace{0.5em}}
+
+
 <<echo=FALSE,print=FALSE>>=
 prettyVersion <- packageDescription("Rcpp")$Version
 prettyDate <- format(Sys.Date(), "%B %e, %Y")
@@ -37,27 +46,6 @@ prettyDate <- format(Sys.Date(), "%B %e, %Y")
 \author{Dirk Eddelbuettel \and Romain Fran\c{c}ois}
 \title{\pkg{Rcpp} syntactic sugar}
 \date{\pkg{Rcpp} version \Sexpr{prettyVersion} as of \Sexpr{prettyDate}}
-
-<<echo=FALSE>>=
-link <- function( f, package, text = f, root = "http://finzi.psych.upenn.edu/R/library/" ){
-	h <- if( missing(package) ) {
-		as.character( help( f ) )
-	} else {
-		as.character( help( f, package = paste( package, sep = "" ) ) )
-	}
-	if( ! length(h) ){
-		sprintf( "\\\\textbf{%s}", f )
-	} else {
-		rx <- "^.*/([^/]*?)/help/(.*?)$"
-		package <- sub( rx, "\\1", h, perl = TRUE )
-		page <- sub( rx, "\\2", h, perl = TRUE )
-		sprintf( "\\\\href{%s%s/html/%s.html}{\\\\texttt{%s}}", root, package, page, text )
-	}
-}
-linkS4class <- function( cl, package, text = cl, root = "http://finzi.psych.upenn.edu/R/library/" ){
-	link( sprintf("%s-class", cl), package, text, root )
-}
-@
 
 \begin{document}
 \maketitle
@@ -479,6 +467,13 @@ x4 = rnorm(n, 0, 1);   // 'n' RNG draws of N(0, 1)
 Similar d/q/p/r functions are provided for the most common distributions:
 beta, binom, cauchy, chisq, exp, f, gamma, geom, hyper, lnorm, logis, nbeta,
 nbinom, nbinom\_mu, nchisq, nf, norm, nt, pois, t, unif, and weibull.
+
+Note that the parameterization used in these sugar functions may differ between
+the top-level functions exposed in an \proglang{R} session. For example, 
+the internal \code{rexp} is parameterized by \code{scale},
+whereas the R-level \code{stats::rexp} is parameterized by \code{rate}. 
+Consult \href{http://cran.r-project.org/doc/manuals/r-release/R-exts.html#Distribution-functions}{Distribution Functions}
+for more details on the parameterization used for these sugar functions.
 
 One point to note is that the programmer using these functions needs to
 initialize the state of the random number generator as detailed in Section

@@ -11,6 +11,8 @@ melt.array	melt.array
 melt.data.frame	melt.data.frame
 melt.default	melt.default
 melt.list	melt.list
+melt.matrix	melt.array
+melt.table	melt.array
 melt_check	melt_check
 parse_formula	parse_formula
 recast	recast

@@ -17,6 +17,8 @@ aggregate,Raster-method	aggregate
 aggregate,SpatialPolygons-method	aggregate
 alignExtent	alignExtent
 all.equal,Raster,Raster-method	compare
+animate	animate
+animate,RasterStackBrick-method	animate
 approxNA	approxNA
 approxNA,RasterStackBrick-method	approxNA
 area	area
@@ -116,10 +118,13 @@ clusterR	cluster
 colFromCell	rowFromCell
 colFromX	cellFrom
 Compare-methods	Compare-methods
+compareCRS	compareCRS
 compareRaster	compare
 contour	contour
 contour,RasterLayer-method	contour
 contour,RasterStackBrick-method	contour
+corLocal	corLocal
+corLocal,RasterLayer,RasterLayer-method	corLocal
 cover	cover
 cover,RasterLayer,RasterLayer-method	cover
 cover,RasterStackBrick,Raster-method	cover
@@ -260,6 +265,7 @@ interpolate,Raster-method	interpolate
 intersect	intersect
 intersect,Extent,ANY-method	intersect
 intersect,Raster,ANY-method	intersect
+intersect,SpatialPoints,ANY-method	intersect
 intersect,SpatialPolygons,SpatialPolygons-method	intersect
 is.factor	factor
 is.factor,Raster-method	factor
@@ -311,6 +317,8 @@ merge	merge
 merge,Extent,ANY-method	merge
 merge,Raster,Raster-method	merge
 merge,RasterStackBrick,missing-method	merge
+metadata	metadata
+metadata<-	metadata
 minValue	extremeValues
 minValue,RasterBrick-method	extremeValues
 minValue,RasterLayer-method	extremeValues
@@ -350,6 +358,8 @@ offs	gainoffset
 offs<-	gainoffset
 origin	origin
 origin,BasicRaster-method	origin
+origin<-	origin
+origin<-,BasicRaster-method	origin
 overlay	overlay
 overlay,Raster,missing-method	overlay
 overlay,Raster,Raster-method	overlay
@@ -443,6 +453,8 @@ res<-	resolution
 resample	resample
 resample,Raster,Raster-method	resample
 returnCluster	programming
+RGB	RGB
+RGB,RasterLayer-method	RGB
 rotate	rotate
 rotate,Raster-method	rotate
 rotated	rotated

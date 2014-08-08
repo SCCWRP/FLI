@@ -1,3 +1,250 @@
+shiny 0.10.1
+--------------------------------------------------------------------------------
+
+* Added Unicode support for Windows. Shiny apps running on Windows must use the
+  UTF-8 encoding for ui.R and server.R (also the optional global.R) if they
+  contain non-ASCII characters. See this article for details and examples:
+  http://shiny.rstudio.com/gallery/unicode-characters.html (#516)
+
+* `runGitHub()` also allows the 'username/repo' syntax now, which is equivalent
+  to `runGitHub('repo', 'username')`. (#427)
+
+* `navbarPage()` now accepts a `windowTitle` parameter to set the web browser
+  page title to something other than the title displayed in the navbar.
+
+* Added an `inline` argument to `textOutput()`, `imageOutput()`, `plotOutput()`,
+  and `htmlOutput()`. When `inline = TRUE`, these outputs will be put in
+  `span()` instead of the default `div()`. This occurs automatically when these
+  outputs are created via the inline expressions (e.g. `r textOutput(expr)`) in
+  R Markdown documents. See an R Markdown example at
+  http://shiny.rstudio.com/gallery/inline-output.html (#512)
+
+* Added support for option groups in the select/selectize inputs. When the
+  `choices` argument for `selectInput()`/`selectizeInput()` is a list of
+  sub-lists and any sub-list is of length greater than 1, the HTML tag
+  `<optgroup>` will be used. See an example at
+  http://shiny.rstudio.com/gallery/option-groups-for-selectize-input.html (#542)
+
+shiny 0.10.0
+--------------------------------------------------------------------------------
+
+* BREAKING CHANGE: By default, observers now terminate themselves if they were
+  created during a session and that session ends. See ?domains for more details.
+
+* Shiny can now be used in R Markdown v2 documents, to create "Shiny Docs":
+  reports and presentations that combine narrative, statically computed output,
+  and fully dynamic inputs and outputs. For more info, including examples, see
+  http://rmarkdown.rstudio.com/authoring_shiny.html.
+
+* The `session` object that can be passed into a server function (e.g.
+  shinyServer(function(input, output, session) {...})) is now documented: see
+  `?session`.
+
+* Most inputs can now accept `NULL` label values to omit the label altogether.
+
+* New `actionLink` input control; like `actionButton`, but with the appearance
+  of a normal link.
+
+* `renderPlot` now calls `print` on its result if it's visible (i.e. no more
+  explicit `print()` required for ggplot2).
+
+* Introduced Shiny app objects (see `?shinyApp`). These essentially replace the
+  little-advertised ability for `runApp` to take a `list(ui=..., server=...)`
+  as the first argument instead of a directory (though that ability remains for
+  backward compatibility). Unlike those lists, Shiny app objects are tagged with
+  class `shiny.appobj` so they can be run simply by printing them.
+
+* Added `maskReactiveContext` function. It blocks the current reactive context,
+  to evaluate expressions that shouldn't use reactive sources directly. (This
+  should not be commonly needed.)
+
+* Added `flowLayout`, `splitLayout`, and `inputPanel` functions for putting UI
+  elements side by side. `flowLayout` lays out its children in a left-to-right,
+  top-to-bottom arrangement. `splitLayout` evenly divides its horizontal space
+  among its children (or unevenly divides if `cellWidths` argument is provided).
+  `inputPanel` is like `flowPanel`, but with a light grey background, and is
+  intended to be used to encapsulate small input controls wherever vertical
+  space is at a premium.
+
+* Added `serverInfo` to obtain info about the Shiny Server if the app is served
+  through it.
+
+* Added an `inline` argument (TRUE/FALSE) in `checkboxGroupInput()` and
+  `radioButtons()` to allow the horizontal layout (inline = TRUE) of checkboxes
+  or radio buttons. (Thanks, @saurfang, #481)
+
+* `sliderInput` and `selectizeInput`/`selectInput` now use a standard horizontal
+  size instead of filling up all available horizontal space. Pass `width="100%"`
+  explicitly for the old behavior.
+
+* Added the `updateSelectizeInput()` function to make it possible to process
+  searching on the server side (i.e. using R), which can be much faster than the
+  client side processing (i.e. using HTML and JavaScript). See the article at
+  http://shiny.rstudio.com/articles/selectize.html for a detailed introduction.
+
+* Fixed a bug of renderDataTable() when the data object only has 1 row and 1
+  column. (Thanks, ZJ Dai, #429)
+
+* `renderPrint` gained a new argument 'width' to control the width of the text
+  output, e.g. renderPrint({mtcars}, width = 40).
+
+* Fixed #220: the zip file for a directory created by some programs may not have
+  the directory name as its first entry, in which case runUrl() can fail. (#220)
+
+* `runGitHub()` can also take a value of the form "username/repo" in its first
+  argument, e.g. both runGitHub("shiny_example", "rstudio") and
+  runGitHub("rstudio/shiny_example") are valid ways to run the GitHub repo.
+
+shiny 0.9.1
+--------------------------------------------------------------------------------
+
+* Fixed warning 'Error in Context$new : could not find function "loadMethod"'
+  that was happening to dependent packages on "R CMD check".
+
+shiny 0.9.0
+--------------------------------------------------------------------------------
+
+* BREAKING CHANGE: Added a `host` parameter to runApp() and runExample(),
+  which defaults to the shiny.host option if it is non-NULL, or "127.0.0.1"
+  otherwise. This means that by default, Shiny applications can only be
+  accessed on the same machine from which they are served. To allow other
+  clients to connect, as in previous versions of Shiny, use "0.0.0.0"
+  (or the IP address of one of your network interfaces, if you care to be
+  explicit about it).
+
+* Added a new function `selectizeInput()` to use the JavaScript library
+  selectize.js (https://github.com/brianreavis/selectize.js), which extends
+  the basic select input in many aspects.
+
+* The `selectInput()` function also gained a new argument `selectize = TRUE`
+  to makes use of selectize.js by default. If you want to revert back to the
+  original select input, you have to call selectInput(..., selectize = FALSE).
+
+* Added Showcase mode, which displays the R code for an app right in the app
+  itself. You can invoke Showcase mode by passing `display.mode="showcase"`
+  to the `runApp()` function. Or, if an app is designed to run in Showcase
+  mode by default, add a DESCRIPTION file in the app dir with Title, Author,
+  and License fields; with "Type: Shiny"; and with "DisplayMode: Showcase".
+
+* Upgraded to Bootstrap 2.3.2 and jQuery 1.11.0.
+
+* Make `tags$head()` and `singleton()` behave correctly when used with
+  `renderUI()` and `uiOutput()`. Previously, "hoisting content to the head"
+  and "only rendering items a single time" were features that worked only
+  when the page was initially loading, not in dynamic rendering.
+
+* Files are now sourced with the `keep.source` option, to help with debugging
+  and profiling.
+
+* Support user-defined input parsers for data coming in from JavaScript using
+  the parseShinyInput method.
+
+* Fixed the bug #299: renderDataTable() can deal with 0-row data frames now.
+  (reported by Harlan Harris)
+
+* Added `navbarPage()` and `navbarMenu()` functions to create applications
+  with multiple top level panels.
+
+* Added `navlistPanel()` function to create layouts with a a bootstrap
+  navlist on the left and tabPanels on the right
+
+* Added `type` parameter to `tabsetPanel()` to enable the use of pill
+  style tabs in addition to the standard ones.
+
+* Added `position` paramter to `tabsetPanel()` to enable positioning of tabs
+  above, below, left, or right of tab content.
+
+* Added `fluidPage()` and `fixedPage()` functions as well as related row and
+  column layout functions for creating arbitrary bootstrap grid layouts.
+
+* Added `hr()` builder function for creating horizontal rules.
+
+* Automatically concatenate duplicate attributes in tag definitions
+
+* Added `responsive` parameter to page building functions for opting-out of
+  bootstrap responsive css.
+
+* Added `theme` parameter to page building functions for specifying alternate
+  bootstrap css styles.
+
+* Added `icon()` function for embedding icons from the
+  [font awesome](http://fontawesome.io/) icon library
+
+* Added `makeReactiveBinding` function to turn a "regular" variable into a
+  reactive one (i.e. reading the variable makes the current reactive context
+  dependent on it, and setting the variable is a source of reactivity).
+
+* Added a function `withMathJax()` to include the MathJax library in an app.
+
+* The argument `selected` in checkboxGroupInput(), selectInput(), and
+  radioButtons() refers to the value(s) instead of the name(s) of the
+  argument `choices` now. For example, the value of the `selected` argument
+  in selectInput(..., choices = c('Label 1' = 'x1', 'Label 2' = 'x2'),
+  selected = 'Label 2') must be updated to 'x2', although names/labels will
+  be automatically converted to values internally for backward
+  compatibility. The same change applies to updateCheckboxGroupInput(),
+  updateSelectInput(), and updateRadioButtons() as well. (#340)
+
+* Now it is possible to only update the value of a checkbox group, select input,
+  or radio buttons using the `selected` argument without providing the
+  `choices` argument in updateCheckboxGroupInput(), updateSelectInput(), and
+  updateRadioButtons(), respectively. (#340)
+
+* Added `absolutePanel` and `fixedPanel` functions for creating absolute-
+  and fixed-position panels. They can be easily made user-draggable by
+  specifying `draggable = TRUE`.
+
+* For the `options` argument of the function `renderDataTable()`, we can
+  pass literal JavaScript code to the DataTables library via `I()`. This
+  makes it possible to use any JavaScript object in the options, e.g. a
+  JavaScript function (which is not supported in JSON). See
+  `?renderDataTable` for details and examples.
+
+* DataTables also works under IE8 now.
+
+* Fixed a bug in DataTables pagination when searching is turned on, which
+  caused failures for matrices as well as empty rows when displaying data
+  frames using renderDataTable().
+
+* The `options` argument in `renderDataTable()` can also take a function
+  that returns a list. This makes it possible to use reactive values in the
+  options. (#392)
+
+* `renderDataTable()` respects more DataTables options now: (1) either
+  bPaginate = FALSE or iDisplayLength = -1 will disable pagination (i.e. all
+  rows are returned from the data); besides, this means we can also use -1
+  in the length menu, e.g. aLengthMenu = list(c(10, 30, -1), list(10, 30,
+  'All')); (2) we can disable searching for individual columns through the
+  bSearchable option, e.g. aoColumns = list(list(bSearchable = FALSE),
+  list(bSearchable = TRUE),...) (the search box for the first column is
+  hidden); (3) we can turn off searching entirely (for both global searching
+  and individual columns) using the option bFilter = FALSE.
+
+* Added an argument `callback` in `renderDataTable()` so that a custom
+  JavaScript function can be applied to the DataTable object. This makes it
+  much easier to use DataTables plug-ins.
+
+* For numeric columns in a DataTable, the search boxes support lower and
+  upper bounds now: a search query of the form "lower,upper" (without
+  quotes) indicates the limits [lower, upper]. For a column X, this means
+  the rows corresponding to X >= lower & X <= upper are returned. If we omit
+  either the lower limit or the upper limit, only the other limit will be
+  used, e.g. ",upper" means X <= upper.
+
+* `updateNumericInput(value)` tries to preserve numeric precision by avoiding
+  scientific notation when possible, e.g. 102145 is no longer rounded to
+  1.0214e+05 = 102140. (Thanks, Martin Loos. #401)
+
+* `sliderInput()` no longer treats a label wrapped in HTML() as plain text,
+  e.g. the label in sliderInput(..., label = HTML('<em>A Label</em>')) will
+  not be escaped any more. (#119)
+
+* Fixed #306: the trailing slash in a path could fail `addResourcePath()`
+  under Windows. (Thanks, ZJ Dai)
+
+* Dots are now legal characters for inputId/outputId. (Thanks, Kevin
+  Lindquist. #358)
+
 shiny 0.8.0
 --------------------------------------------------------------------------------
 
@@ -14,7 +261,7 @@ shiny 0.8.0
   searching (global search or search by individual columns), sorting (by
   single or multiple columns). All these features are implemented on the R
   side; for example, we can use R regular expressions for searching.
-  Besides, it also uses the Twitter Bootstrap CSS style. See the full
+  Besides, it also uses the Bootstrap CSS style. See the full
   documentation and examples in the tutorial:
   http://rstudio.github.io/shiny/tutorial/#datatables
 
@@ -313,7 +560,7 @@ shiny 0.1.8
 * Fix issue #27: Warnings cause reactive functions to stop executing.
 * The server.R and ui.R filenames are now case insensitive.
 * Add `wellPanel` function for creating inset areas on the page.
-* Add `bootstrapPage` function for creating new Twitter Bootstrap based
+* Add `bootstrapPage` function for creating new Bootstrap based
   layouts from scratch.
 
 

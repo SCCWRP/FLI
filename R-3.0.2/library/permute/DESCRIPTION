@@ -1,7 +1,7 @@
 Package: permute
 Title: Functions for generating restricted permutations of data
-Version: 0.8-0
-Date: $Date: 2013-11-30 14:50:04 -0600 (Sat, 30 Nov 2013) $
+Version: 0.8-3
+Date: $Date$
 Authors@R: c(person(given = "Gavin L.", family = "Simpson",
                     email = "ucfagls@gmail.com",
                     role = c("aut", "cph", "cre")),
@@ -15,13 +15,16 @@ License: GPL-2
 ByteCompile: true
 URL: http://vegan.r-forge.r-project.org/
 Copyright: see file COPYRIGHTS
-Packaged: 2013-12-01 01:35:48 UTC; gavin
 Author: Gavin L. Simpson [aut, cph, cre],
   R Core Team [cph],
   Douglas M. Bates [ctb],
   Jari Oksanen [ctb]
 Maintainer: Gavin L. Simpson <ucfagls@gmail.com>
-NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2013-12-01 08:05:32
-Built: R 3.0.2; ; 2014-01-18 23:18:48 UTC; windows
+Repository/R-Forge/Project: vegan
+Repository/R-Forge/Revision: 2847
+Repository/R-Forge/DateTimeStamp: 2014-01-28 04:02:29
+Date/Publication: 2014-01-29 21:24:58
+Packaged: 2014-01-28 07:15:34 UTC; rforge
+NeedsCompilation: no
+Built: R 3.0.3; ; 2014-07-30 08:46:53 UTC; windows

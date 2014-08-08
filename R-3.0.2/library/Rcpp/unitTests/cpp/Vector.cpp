@@ -1,4 +1,4 @@
-// -*- mode: C++; c-indent-level: 4; c-basic-offset: 4; tab-width: 8 -*-
+// -*- mode: C++; c-indent-level: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 //
 // Vector.cpp: Rcpp R/C++ interface class library -- Vector unit tests
 //
@@ -27,14 +27,14 @@ inline double square( double x){ return x*x; }
 // [[Rcpp::export]]
 RawVector raw_(){
     RawVector x(10) ;
-	for( int i=0; i<10; i++) x[i] = (Rbyte)i ;
-	return x ;
+    for( int i=0; i<10; i++) x[i] = (Rbyte)i ;
+    return x ;
 }
 
 // [[Rcpp::export]]
 RawVector raw_REALSXP( RawVector x ){
     for( int i=0; i<x.size(); i++) {
-    	x[i] = x[i]*2 ;
+        x[i] = x[i]*2 ;
     }
     return x ;
 }
@@ -84,8 +84,8 @@ ComplexVector complex_(){
     ComplexVector x(10) ;
     Rcomplex rc ;
     for( int i=0; i<10; i++) {
-    	rc.r = rc.i = i + 0.0 ;
-    	x[i] = rc ;
+        rc.r = rc.i = i + 0.0 ;
+        x[i] = rc ;
     }
     return x ;
 }
@@ -93,20 +93,20 @@ ComplexVector complex_(){
 // [[Rcpp::export]]
 ComplexVector complex_CPLXSXP( ComplexVector x ){
     int nn = x.size();
-	for( int i=0; i<nn; i++) {
-		x[i].r = x[i].r*2 ;
-		x[i].i = x[i].i*2 ;
-	}
-	return x ;
+    for( int i=0; i<nn; i++) {
+        x[i].r = x[i].r*2 ;
+        x[i].i = x[i].i*2 ;
+    }
+    return x ;
 }
 
 // [[Rcpp::export]]
 ComplexVector complex_INTSXP( SEXP vec ){
     ComplexVector x(vec);
-        	int nn = x.size();
-        	IntegerVector tmp(nn, 2.0);
-    		ComplexVector tmp1(tmp);
-    		x = x * tmp1;
+    int nn = x.size();
+    IntegerVector tmp(nn, 2.0);
+    ComplexVector tmp1(tmp);
+    x = x * tmp1;
     return x ;
 }
 
@@ -123,8 +123,8 @@ ComplexVector complex_REALSXP(SEXP vec){
 // [[Rcpp::export]]
 IntegerVector integer_ctor(){
     IntegerVector x(10) ;
-	for( int i=0; i<10; i++) x[i] = i ;
-	return x ;
+    for( int i=0; i<10; i++) x[i] = i ;
+    return x ;
 }
 
 // [[Rcpp::export]]
@@ -154,26 +154,26 @@ IntegerVector integer_dimension_ctor_3(){
 // [[Rcpp::export]]
 IntegerVector integer_range_ctor_1(){
     int x[] = { 0, 1, 2, 3 } ;
-	IntegerVector y( x, x+4 ) ;
-	return y;
+    IntegerVector y( x, x+4 ) ;
+    return y;
 }
 
 // [[Rcpp::export]]
 IntegerVector integer_range_ctor_2(){
     std::vector<int> vec(4) ;
-	for( size_t i = 0; i<4; i++) vec[i] = i;
-	IntegerVector y( vec.begin(), vec.end() ) ;
-	return y;
+    for( size_t i = 0; i<4; i++) vec[i] = i;
+    IntegerVector y( vec.begin(), vec.end() ) ;
+    return y;
 }
 
 // [[Rcpp::export]]
 IntegerVector integer_names_set(){
     IntegerVector y(2) ;
-	std::vector<std::string> names(2)  ;
-	names[0] = "foo" ;
-	names[1] = "bar" ;
-	y.names() = names ;
-	return y ;
+    std::vector<std::string> names(2)  ;
+    names[0] = "foo" ;
+    names[1] = "bar" ;
+    y.names() = names ;
+    return y ;
 }
 
 // [[Rcpp::export]]
@@ -184,13 +184,6 @@ CharacterVector integer_names_get( IntegerVector y ){
 // [[Rcpp::export]]
 int integer_names_indexing( IntegerVector y ){
     return y["foo"] ;
-}
-
-// [[Rcpp::export]]
-IntegerVector integer_comma(){
-    IntegerVector x(4) ;
-	x = 0, 1, 2, 3 ;
-	return x ;
 }
 
 // [[Rcpp::export]]
@@ -207,9 +200,9 @@ IntegerVector integer_push_front( IntegerVector y ){
 
 // [[Rcpp::export]]
 IntegerVector integer_insert( IntegerVector y){
-	y.insert( 0, 5 ) ;
-	y.insert( 2, 7 ) ;
-	return y ;
+    y.insert( 0, 5 ) ;
+    y.insert( 2, 7 ) ;
+    return y ;
 }
 
 // [[Rcpp::export]]
@@ -229,11 +222,11 @@ List integer_erase_range( IntegerVector x, IntegerVector y ){
 List integer_erase_range_2( IntegerVector x, IntegerVector y ){
     IntegerVector::iterator it = x.begin()+1 ;
     while( it != x.end() ){
-        it = x.erase(it) ;    
+        it = x.erase(it) ;
     }
     it = y.begin() + 1 ;
     while( it != y.end() ){
-        it = y.erase(it) ;    
+        it = y.erase(it) ;
     }
     return List::create( x, y ) ;
 }
@@ -242,11 +235,11 @@ List integer_erase_range_2( IntegerVector x, IntegerVector y ){
 List List_erase_range_2( List x, List y ){
     List::iterator it = x.begin()+1 ;
     while( it != x.end() ){
-        it = x.erase(it) ;    
+        it = x.erase(it) ;
     }
     it = y.begin() + 1 ;
     while( it != y.end() ){
-        it = y.erase(it) ;    
+        it = y.erase(it) ;
     }
     return List::create( x, y ) ;
 }
@@ -277,18 +270,18 @@ IntegerVector integer_create_zero(){
 // [[Rcpp::export]]
 List integer_create_(){
     List output(2);
-	output[0] = IntegerVector::create( 10, 20 ) ;
-	output[1] = IntegerVector::create(
-		_["foo"] = 20,
-		_["bar"] = 30 ) ;
-	return output ;
+    output[0] = IntegerVector::create( 10, 20 ) ;
+    output[1] = IntegerVector::create(
+                                      _["foo"] = 20,
+                                      _["bar"] = 30 ) ;
+    return output ;
 }
 
 // [[Rcpp::export]]
 IntegerVector integer_clone_( IntegerVector vec ){
     IntegerVector dolly = clone( vec ) ;
     for( size_t i=0; i<10; i++){
-    	dolly[i] = 10 - i ;
+        dolly[i] = 10 - i ;
     }
     return dolly ;
 }
@@ -296,15 +289,15 @@ IntegerVector integer_clone_( IntegerVector vec ){
 // [[Rcpp::export]]
 NumericVector numeric_(){
     NumericVector x(10) ;
-	for( int i=0; i<10; i++) x[i] = i ;
-	return x ;
+    for( int i=0; i<10; i++) x[i] = i ;
+    return x ;
 }
 
 // [[Rcpp::export]]
 NumericVector numeric_REALSXP( SEXP vec){
     NumericVector x(vec) ;
     for( int i=0; i<x.size(); i++) {
-    	x[i] = x[i]*2.0 ;
+        x[i] = x[i]*2.0 ;
     }
     return x ;
 }
@@ -320,25 +313,25 @@ IntegerVector numeric_import(){
 NumericVector numeric_importtransform(){
     std::vector<double> v(10) ;
     for( int i=0; i<10; i++) v[i] = i ;
-    
+
     return NumericVector::import_transform( v.begin(), v.end(), square ) ;
 }
 
 // [[Rcpp::export]]
 List list_ctor(){
     List x(10) ;
-	for( int i=0; i<10; i++) x[i] = Rf_ScalarInteger( i * 2)  ;
-	return x ;
+    for( int i=0; i<10; i++) x[i] = Rf_ScalarInteger( i * 2)  ;
+    return x ;
 }
-	
+
 // [[Rcpp::export]]
 List list_template_(){
     List x(4) ;
-	x[0] = "foo"  ;
-	x[1] = 10 ;
-	x[2] = 10.2 ;
-	x[3] = false;
-	return x ;
+    x[0] = "foo"  ;
+    x[1] = 10 ;
+    x[2] = 10.2 ;
+    x[3] = false;
+    return x ;
 }
 
 // [[Rcpp::export]]
@@ -431,11 +424,11 @@ List list_implicit_push_back(){
 // [[Rcpp::export]]
 List list_create_(){
     List output(2);
-	output[0] = List::create( 10, "foo" ) ;
-	output[1] = List::create(
-		_["foo"] = 10,
-		_["bar"] = true ) ;
-	return output ;
+    output[0] = List::create( 10, "foo" ) ;
+    output[1] = List::create(
+                             _["foo"] = 10,
+                             _["bar"] = true ) ;
+    return output ;
 }
 
 // [[Rcpp::export]]
@@ -526,13 +519,13 @@ CharacterVector character_assign1(){
 // [[Rcpp::export]]
 CharacterVector character_assign2(){
     std::vector<std::string> vec(4) ;
-	vec[0] = "foo";
-	vec[1] = "bar";
-	vec[2] = "bling";
-	vec[3] = "boom" ;
-	CharacterVector y ;
-	y.assign( vec.begin(), vec.end() ) ;
-	return y;
+    vec[0] = "foo";
+    vec[1] = "bar";
+    vec[2] = "bling";
+    vec[3] = "boom" ;
+    CharacterVector y ;
+    y.assign( vec.begin(), vec.end() ) ;
+    return y;
 }
 
 // [[Rcpp::export]]
@@ -545,12 +538,12 @@ CharacterVector character_range_ctor1(){
 // [[Rcpp::export]]
 CharacterVector character_range_ctor2(){
     std::vector<std::string> vec(4) ;
-	vec[0] = "foo";
-	vec[1] = "bar";
-	vec[2] = "bling";
-	vec[3] = "boom" ;
-	CharacterVector y( vec.begin(), vec.end() ) ;
-	return y;
+    vec[0] = "foo";
+    vec[1] = "bar";
+    vec[2] = "bling";
+    vec[3] = "boom" ;
+    CharacterVector y( vec.begin(), vec.end() ) ;
+    return y;
 }
 
 // [[Rcpp::export]]
@@ -575,7 +568,7 @@ std::string character_iterator1( CharacterVector letters ){
     CharacterVector::iterator last = letters.end() ;
     while( first != last ){
         res += *first ;
-    	++first ;
+        ++first ;
     }
     return res ;
 }
@@ -600,45 +593,38 @@ std::string character_names_indexing( CharacterVector y ){
 }
 
 // [[Rcpp::export]]
-CharacterVector character_comma(){
-    CharacterVector x(3) ;
-    x = "foo", "bar", "bling" ;
-    return x ;
-}
-
-// [[Rcpp::export]]
 List character_listOf( List ll ){
     CharacterVector cv1 = ll["foo"];
     CharacterVector cv2 = ll["bar"];
     std::string rv1 = std::string(cv1[0]) + cv1[1] + cv1[2];
     std::string rv2 = std::string(cv2[0]) + cv2[1] + cv2[2];
-    return List::create(_["foo"] = rv1, _["bar"] = rv2); 
+    return List::create(_["foo"] = rv1, _["bar"] = rv2);
 }
 
 // [[Rcpp::export]]
 int character_find_(CharacterVector y){
-	CharacterVector::iterator it = std::find( y.begin(), y.end(), "foo" ) ;
-	return std::distance( y.begin(), it );
+    CharacterVector::iterator it = std::find( y.begin(), y.end(), "foo" ) ;
+    return std::distance( y.begin(), it );
 }
 
 // [[Rcpp::export]]
 List character_create_(){
     List output(2);
-	output[0] = CharacterVector::create( "foo", "bar" ) ;
-	output[1] = CharacterVector::create(
-		_["foo"] = "bar",
-		_["bar"] = "foo"
-		) ;
-	return output ;
+    output[0] = CharacterVector::create( "foo", "bar" ) ;
+    output[1] = CharacterVector::create(
+                                        _["foo"] = "bar",
+                                        _["bar"] = "foo"
+                                        ) ;
+    return output ;
 }
 
 // [[Rcpp::export]]
 List complex_binary_sugar(ComplexVector xx, ComplexVector yy){
     return List::create(
-    	_["+"] = xx + yy,
-    	_["-"] = xx - yy,
-    	_["*"] = xx * yy,
-    	_["/"] = xx / yy
+                        _["+"] = xx + yy,
+                        _["-"] = xx - yy,
+                        _["*"] = xx * yy,
+                        _["/"] = xx / yy
     ) ;
 }
 
@@ -657,7 +643,7 @@ CharacterVector factors( CharacterVector s){
 // [[Rcpp::export]]
 IntegerVector IntegerVector_int_init(){
     IntegerVector x(2,4) ;
-	return x ;
+    return x ;
 }
 
 // [[Rcpp::export]]
@@ -671,7 +657,7 @@ List CharacterVectorEqualityOperator( CharacterVector x, CharacterVector y){
     LogicalVector eq(n), neq(n);
     for( int i=0; i<n; i++){
         eq[i]  = x[i] == y[i] ;
-        neq[i] = x[i] != y[i] ; 
+        neq[i] = x[i] != y[i] ;
     }
     return List::create(eq, neq) ;
 }
@@ -681,90 +667,86 @@ List List_rep_ctor(IntegerVector x){
     return List(3, x) ;
 }
 
-#if defined(HAS_INIT_LISTS)
-    RawVector raw_initializer_list(){
-        RawVector x = {0,1,2,3} ;
-        for( int i=0; i<x.size(); i++) x[i] = x[i]*2 ;
-        return x ;
+// [[Rcpp::export]]
+int stdVectorDouble(std::vector<double> x) {
+    return x.size();
+}
+
+// [[Rcpp::export]]
+int stdVectorDoubleConst(const std::vector<double> x) {
+    return x.size();
+}
+
+// [[Rcpp::export]]
+int stdVectorDoubleRef(std::vector<double> & x) {
+    return x.size();
+}
+
+// [[Rcpp::export]]
+int stdVectorDoubleConstRef(const std::vector<double> & x) {
+    return x.size();
+}
+
+// [[Rcpp::export]]
+int stdVectorInt(std::vector<int> x) {
+    return x.size();
+}
+
+// [[Rcpp::export]]
+int stdVectorIntConst(const std::vector<int> x) {
+    return x.size();
+}
+
+// [[Rcpp::export]]
+int stdVectorIntRef(std::vector<int> & x) {
+    return x.size();
+}
+
+// [[Rcpp::export]]
+int stdVectorIntConstRef(const std::vector<int> & x) {
+    return x.size();
+}
+
+// [[Rcpp::export]]
+std::string character_vector_const_proxy(const CharacterVector& str){
+    char* cstr = (char*) str[0] ;
+    std::string res  ;
+    res += cstr ;
+    return cstr ;
+}
+
+// [[Rcpp::export]]
+CharacterVector CharacterVector_test_const_proxy(const CharacterVector x){
+    CharacterVector out( x.size() ) ;
+    for( int i=0; i<x.size(); i++){
+        out[i] = x[i] ;
     }
-    
-    ComplexVector complex_initializer_list(){
-        Rcomplex c1 ; c1.r = c1.i = 0.0 ;
-    	Rcomplex c2 ; c2.r = c2.i = 1.0 ;
-    	ComplexVector x = { c1, c2 } ;
-    	return x ;
-    }
-    
-    IntegerVector integer_initializer_list(){
-        IntegerVector x = {0,1,2,3} ;
-    	for( int i=0; i<x.size(); i++) x[i] = x[i]*2 ;
-    	return x ;
-    }
-    
-    NumericVector numeric_initlist(){
-        NumericVector x = {0.0,1.0,2.0,3.0} ;
-    	for( int i=0; i<x.size(); i++) x[i] = x[i]*2 ;
-    	return x ;
-    }
-    
-    List list_initializer_list(){
-        SEXP x0 = PROTECT( Rf_ScalarInteger( 0 ) ) ;
-        SEXP x1 = PROTECT( Rf_ScalarInteger( 1 ) ) ;
-        SEXP x2 = PROTECT( Rf_ScalarInteger( 2 ) ) ;
-        List x = { x0, x1, x2} ;
-        UNPROTECT(3) ;
-        return x ;
-    }
-    
-    CharacterVector character_initializer_list(){
-        CharacterVector x = {"foo", "bar"} ;
-        return x ;
-    }
-    
-    List List_insert(){
-        List list(x) ;
-        list.insert( list.begin(), 10 ) ;
-        list.insert( list.end(), Named("foo", "bar" ) ) ;
-        return list ;
-	}
-#endif
-
-// [[Rcpp::export]]
-int stdVectorDouble(std::vector<double> x) { 
-    return x.size();
+    return out ;
 }
 
 // [[Rcpp::export]]
-int stdVectorDoubleConst(const std::vector<double> x) { 
-    return x.size();
+NumericVector sort_numeric(NumericVector x) {
+  return x.sort();
 }
 
 // [[Rcpp::export]]
-int stdVectorDoubleRef(std::vector<double> & x) { 
-    return x.size();
+IntegerVector sort_integer(IntegerVector x) {
+  return x.sort();
 }
 
 // [[Rcpp::export]]
-int stdVectorDoubleConstRef(const std::vector<double> & x) { 
-    return x.size();
+CharacterVector sort_character(CharacterVector x) {
+  return x.sort();
 }
 
 // [[Rcpp::export]]
-int stdVectorInt(std::vector<int> x) { 
-    return x.size();
+LogicalVector sort_logical(LogicalVector x) {
+  return x.sort();
 }
 
 // [[Rcpp::export]]
-int stdVectorIntConst(const std::vector<int> x) { 
-    return x.size();
-}
-
-// [[Rcpp::export]]
-int stdVectorIntRef(std::vector<int> & x) { 
-    return x.size();
-}
-
-// [[Rcpp::export]]
-int stdVectorIntConstRef(const std::vector<int> & x) { 
-    return x.size();
+List list_sexp_assign(SEXP x) {
+    List L;
+    L = x;
+    return L;
 }

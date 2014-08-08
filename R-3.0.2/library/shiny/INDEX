@@ -1,35 +1,47 @@
 HTML                    Mark Characters as HTML
-actionButton            Action button
+absolutePanel           Panel with absolute positioning
+actionButton            Action button/link
 addResourcePath         Resource Publishing
-animationOptions        Animation Options
-bootstrapPage           Create a Twitter Bootstrap page
+bootstrapPage           Create a Bootstrap page
+builder                 HTML Builder Functions
 checkboxGroupInput      Checkbox Group Input Control
 checkboxInput           Checkbox Input Control
+column                  Create a column within a UI definition
 conditionalPanel        Conditional Panel
 dateInput               Create date input
 dateRangeInput          Create date range input
+domains                 Reactive domains
 downloadButton          Create a download button or link
 downloadHandler         File Downloads
-exprToFunction          Convert an expression or quoted expression to a
-                        function
+exprToFunction          Convert an expression to a function
 fileInput               File Upload Control
+fixedPage               Create a page with a fixed layout
+flowLayout              Flow layout
+fluidPage               Create a page with fluid layout
 headerPanel             Create a header panel
 helpText                Create a help text element
 htmlOutput              Create an HTML output element
+icon                    Create an icon
 imageOutput             Create a image output element
-includeHTML             Include Content From a File
-installExprFunction     Installs an expression in the given environment
-                        as a function, and registers debug hooks so
-                        that breakpoints may be set in the function.
+include                 Include Content From a File
+inputPanel              Input panel
+installExprFunction     Install an expression as a function
 invalidateLater         Scheduled Invalidation
 is.reactivevalues       Checks whether an object is a reactivevalues
                         object
 isolate                 Create a non-reactive scope for an expression
+knit_print.html         Knitr S3 methods
+knitr_methods           Knitr S3 methods
 mainPanel               Create a main panel
+makeReactiveBinding     Make a reactive variable
+markRenderFunction      Mark a function as a render function
+maskReactiveContext     Evaluate an expression without a reactive
+                        context
+navbarPage              Create a page with a top level navigation bar
+navlistPanel            Create a navigation list panel
 numericInput            Create a numeric input control
 observe                 Create a reactive observer
 outputOptions           Set options for an output object.
-p                       HTML Builder Functions
 pageWithSidebar         Create a page with a sidebar
 parseQueryString        Parse a GET query string from a URL
 plotOutput              Create an plot output element
@@ -47,6 +59,8 @@ reactiveTimer           Timer
 reactiveUI              UI output (deprecated)
 reactiveValues          Create an object for storing reactive values
 reactiveValuesToList    Convert a reactivevalues object to a list
+registerInputHandler    Register an Input Handler
+removeInputHandler      Deregister an Input Handler
 renderDataTable         Table output with the JavaScript library
                         DataTables
 renderImage             Image file output
@@ -58,20 +72,22 @@ renderUI                UI Output
 repeatable              Make a random number generator repeatable
 runApp                  Run Shiny Application
 runExample              Run Shiny Example Applications
-runGist                 Run a Shiny application from
-                        https://gist.github.com
-runGitHub               Run a Shiny application from a GitHub
-                        repository
 runUrl                  Run a Shiny application from a URL
 selectInput             Create a select list input control
+serverInfo              Collect information about the Shiny Server
+                        environment
+session                 Session object
 shiny-package           Web Application Framework for R
+shinyApp                Create a Shiny app object
 shinyDeprecated         Print message for deprecated functions in Shiny
 shinyServer             Define Server Functionality
 shinyUI                 Create a Shiny UI handler
 showReactLog            Reactive Log Visualizer
+sidebarLayout           Layout a sidebar and main area
 sidebarPanel            Create a sidebar panel
-singleton               Include Content Only Once
+singleton               Include content only once
 sliderInput             Slider Input Widget
+splitLayout             Split layout
 stopApp                 Stop the currently running Shiny app
 submitButton            Create a submit button
 tabPanel                Create a tab panel
@@ -80,6 +96,7 @@ tabsetPanel             Create a tabset panel
 tag                     HTML Tag Object
 textInput               Create a text input control
 textOutput              Create a text output element
+titlePanel              Create a panel containing an application title.
 updateCheckboxGroupInput
                         Change the value of a checkbox group input on
                         the client
@@ -97,7 +114,11 @@ updateSliderInput       Change the value of a slider input on the
                         client
 updateTabsetPanel       Change the selected tab on the client
 updateTextInput         Change the value of a text input on the client
+validate                Validate input values and other conditions
 validateCssUnit         Validate proper CSS formatting of a unit
 verbatimTextOutput      Create a verbatim text output element
+verticalLayout          Lay out UI elements vertically
 wellPanel               Create a well panel
-withTags                Evaluate an expression using the 'tags'
+withMathJax             Load the MathJax library and typeset math
+                        expressions
+withTags                Evaluate an expression using 'tags'

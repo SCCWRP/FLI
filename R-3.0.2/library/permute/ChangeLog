@@ -1,6 +1,32 @@
-$Date: 2013-11-30 17:32:45 -0600 (Sat, 30 Nov 2013) $
+$Date: 2014-01-26 20:21:11 +0100 (Sun, 26 Jan 2014) $
 
 permute ChangeLog
+
+Version 0.8-3
+
+	* allPerms: with free permutations *within* plots, `allPerms()`
+	was not returning the indices in the original data but in the
+	permutation indices within plots.
+
+	Reported by: Joris Meys
+
+Version 0.8-2
+
+	* allPerms: with free permutations *within* blocks, `allPerms()`
+	was not returning the indices in the original data but in the
+	permutation indices within block.
+
+	In addition, `allPerms()` was not replicating each row in a
+	within-block permutation matrix for all the rows in the other
+	block within-block permutation matrices. This is now achieved via
+	a new, non-exported utility function `cbindAllPerms()`.
+
+	Reported by: Joris Meys
+
+Version 0.8-1
+
+	* setBlocks: get block name before doing anything so that you
+	really get only name instead of its evaluated value.
 
 Version 0.8-0
 

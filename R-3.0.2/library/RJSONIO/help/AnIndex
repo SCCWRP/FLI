@@ -33,10 +33,13 @@ StrictLogical	fromJSON
 StrictNumeric	fromJSON
 toJSON	toJSON
 toJSON,ANY-method	toJSON
+toJSON,array-method	toJSON
 toJSON,AsIs-method	toJSON
 toJSON,character-method	toJSON
+toJSON,data.frame-method	toJSON
 toJSON,environment-method	toJSON
 toJSON,factor-method	toJSON
+toJSON,function-method	toJSON
 toJSON,hexmode-method	toJSON
 toJSON,integer,missing-method	toJSON
 toJSON,integer-method	toJSON
